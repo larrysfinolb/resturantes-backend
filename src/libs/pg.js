@@ -10,6 +10,13 @@ const options = {
   password: config.dbPass,
   port: config.dbPort,
 };
+
+if (config.env === 'production') {
+  options.ssl = {
+    rejectUnauthorized: false,
+  };
+}
+
 const pool = new Pool(options);
 
 export { pool };
