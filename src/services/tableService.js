@@ -32,7 +32,7 @@ const createNewTable = async () => {
     const payload = {
       sub: result1.id,
     };
-    const qrToken = jwt.sign(payload, config.qrToken);
+    const qrToken = jwt.sign(payload, config.qrSecret);
 
     const query2 = 'UPDATE tables SET qr_token = $1 WHERE id = $2 RETURNING *';
     const { rows: rows2 } = await client.query(query2, [qrToken, result1.id]);
