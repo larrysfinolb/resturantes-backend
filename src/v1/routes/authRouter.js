@@ -1,14 +1,22 @@
 import express from 'express';
 import authController from '../../controllers/authController.js';
-import { authJwtHandler } from '../../middlewares/authHandler.js';
-import { config } from '../../config/index.js';
+import authSchema from '../../schemas/authSchema.js';
+import { schemaHandler } from '../../middlewares/schemaHandler.js';
 
 const authRouter = express.Router();
 
-authRouter.get('/verify', authJwtHandler(config.qrSecret), authController.verify);
+authRouter.post('/signup', schemaHandler(authSchema.signup, 'body'), authController.signup);
 
-authRouter.post('/login', authJwtHandler(config.qrSecret), authController.login);
+authRouter.get('/verify/:verifyToken', authController.verify);
 
-authRouter.post('/signup', authJwtHandler(config.qrSecret), authController.signup);
+authRouter.post('/login', schemaHandler(authSchema.login, 'body'), authController.login);
+
+authRouter.post('/recover-password', schemaHandler(authSchema.recoverPassword, 'body'), authController.recoverPassword);
+
+authRouter.patch(
+  '/change-password/:recoverToken',
+  schemaHandler(authSchema.changePassword, 'body'),
+  authController.changePassword
+);
 
 export default authRouter;

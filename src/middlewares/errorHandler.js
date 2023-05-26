@@ -1,10 +1,9 @@
-const errorHandler = (error, req, res, next) => {
-  if (error.statusCode && error.statusMessage) {
-    const { statusCode, statusMessage } = error;
-    res.status(statusCode).json({ status: statusMessage, message: error?.message });
+export const errorHandler = (error, req, res, next) => {
+  if (error.statusCode) {
+    const { statusCode, message } = error;
+    res.status(statusCode).json({ message });
   } else {
-    res.status(500).json({ status: 'Internal Server Error', message: error?.message });
+    const { stack } = error;
+    res.status(500).json({ message: stack });
   }
 };
-
-export { errorHandler };

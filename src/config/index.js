@@ -1,16 +1,19 @@
 import dotenv from 'dotenv';
 
-dotenv.config();
+if (process.env.NODE_ENV !== 'production') dotenv.config();
 
 const config = {
-  env: process.env.ENV,
   dbName: process.env.DB_NAME,
   dbHost: process.env.DB_HOST,
   dbPort: process.env.DB_PORT,
   dbUser: process.env.DB_USER,
   dbPass: process.env.DB_PASS,
+  smtpEmail: process.env.SMTP_EMAIL,
+  smtpPassword: process.env.SMTP_PASSWORD,
   qrSecret: process.env.QR_SECRET,
-  sesionSecret: process.env.SESION_SECRET,
+  verifySecret: process.env.VERIFY_SECRET,
+  accessSecret: process.env.ACCESS_SECRET,
+  refreshSecret: process.env.REFRESH_SECRET,
 };
 
 export { config };

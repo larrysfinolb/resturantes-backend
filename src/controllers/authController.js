@@ -1,10 +1,25 @@
 import authService from '../services/authService.js';
 
-const verify = (req, res, next) => {
+const signup = (req, res, next) => {
+  const { body } = req;
+
   authService
-    .verify()
+    .signup(body)
+    .then((data) => {
+      res.status(201).json({ message: 'SIGNED_UP', data });
+    })
+    .catch((err) => {
+      next(err);
+    });
+};
+
+const verify = (req, res, next) => {
+  const { verifyToken } = req.params;
+
+  authService
+    .verify({ verifyToken })
     .then(() => {
-      res.status(200).json({ message: 'Verified' });
+      res.status(200).json({ message: 'VERIFIED', data: null });
     })
     .catch((err) => {
       next(err);
@@ -16,8 +31,8 @@ const login = (req, res, next) => {
 
   authService
     .login(body)
-    .then((token) => {
-      res.status(200).json({ status: 'OK', data: token });
+    .then((data) => {
+      res.status(200).json({ message: 'LOGGED_IN', data });
     })
     .catch((err) => {
       console.log(err);
@@ -25,17 +40,37 @@ const login = (req, res, next) => {
     });
 };
 
-const signup = (req, res, next) => {
+const recoverPassword = (req, res, next) => {
   const { body } = req;
 
   authService
-    .signup(body)
-    .then((createdCustomer) => {
-      res.status(201).json({ status: 'Created', data: createdCustomer });
+    .recoverPassword(body)
+    .then(() => {
+      res.status(200).json({ message: 'RECOVER_PASSWORD', data: null });
     })
     .catch((err) => {
       next(err);
     });
 };
 
-export default { verify, login, signup };
+const changePassword = (req, res, next) => {
+  const { body } = req;
+  const { recoverToken } = req.params;
+
+  authService
+    .changePassword({ ...body, recoverToken })
+    .then(() => {
+      res.status(200).json({ message: 'CHANGE_PASSWORD', data: null });
+    })
+    .catch((err) => {
+      next(err);
+    });
+};
+
+export default {
+  signup,
+  verify,
+  login,
+  recoverPassword,
+  changePassword,
+};

@@ -11,7 +11,7 @@ const options = {
   port: config.dbPort,
 };
 
-if (config.env === 'production') {
+if (process.env.NODE_ENV === 'production') {
   options.ssl = {
     rejectUnauthorized: false,
   };
