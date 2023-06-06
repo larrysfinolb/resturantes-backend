@@ -7,32 +7,45 @@ import { sendMail } from '../libs/nodemailer.js';
 const signup = async ({ fullName, email, dni, phone, password }) => {
   const client = await pool.connect();
 
+  // FORMATEAR VALORES
+  fullName = fullName.trim();
+  email = email.toLowerCase().trim();
+  dni = dni.trim();
+  phone = phone.trim();
+
   try {
     await client.query('BEGIN');
 
-    const query1 = 'SELECT * FROM customers WHERE email = $1';
+    // VALIDAR QUE EL EMAIL NO ESTE EN USO
+    const query1 = 'SELECT id, active FROM customers WHERE email = $1';
     const { rows: rows1 } = await client.query(query1, [email]);
     const result1 = rows1[0];
-
     if (result1?.active) throw { statusCode: 409, message: 'EMAIL_IN_USE' };
+
+    // VALIDAR QUE EL DNI NO ESTE EN USO
+    const query2 = 'SELECT id, active FROM customers WHERE dni = $1';
+    const { rows: rows2 } = await client.query(query2, [dni]);
+    const result2 = rows2[0];
+    if (result2?.active) throw { statusCode: 409, message: 'DNI_IN_USE' };
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const verifyToken = jwt.sign({ sub: email }, config.verifySecret, { expiresIn: '7d' });
 
-    let query2;
-    let result2;
+    let query3;
+    let result3;
 
-    if (result1) {
-      query2 =
-        'UPDATE customers SET "fullName" = $1, "dni" = $2, "phone" = $3, "password" = $4 WHERE email = $5 RETURNING *';
-      const { rows: rows2 } = await client.query(query2, [fullName, dni, phone, hashedPassword, email]);
-      result2 = rows2[0];
+    if (result1 || result2) {
+      const id = result1?.id || result2?.id;
+      query3 =
+        'UPDATE customers SET "fullName" = $1, "email" = $2, "dni" = $3, "phone" = $4, "password" = $5 WHERE id = $6 RETURNING *';
+      const { rows: rows3 } = await client.query(query3, [fullName, email, dni, phone, hashedPassword, id]);
+      result3 = rows3[0];
     } else {
-      query2 =
+      query3 =
         'INSERT INTO customers ("fullName", "email", "dni", "phone", "password") VALUES ($1, $2, $3, $4, $5) RETURNING *';
-      const { rows: rows2 } = await client.query(query2, [fullName, email, dni, phone, hashedPassword]);
-      result2 = rows2[0];
+      const { rows: rows3 } = await client.query(query3, [fullName, email, dni, phone, hashedPassword]);
+      result3 = rows3[0];
     }
 
     const domain =
@@ -43,14 +56,14 @@ const signup = async ({ fullName, email, dni, phone, password }) => {
       from: config.smtpEmail,
       to: email,
       subject: 'Verifica tu cuenta',
-      html: `<a href="${domain}/verify/${verifyToken}">Haz clic aquí</a>`,
+      html: `<a href="${domain}/login/${verifyToken}">Haz clic aquí</a>`,
     };
     await sendMail(mail);
 
     await client.query('COMMIT');
-    delete result2.password;
-    delete result2.active;
-    return result2;
+    delete result3.password;
+    delete result3.active;
+    return result3;
   } catch (err) {
     await client.query('ROLLBACK');
     throw err;
@@ -64,7 +77,11 @@ const verify = async ({ verifyToken }) => {
   try {
     await client.query('BEGIN');
 
-    const { sub } = jwt.verify(verifyToken, config.verifySecret);
+    const { sub } = await jwt.verify(verifyToken, config.verifySecret, (err, decode) => {
+      console.log(err);
+      if (err) throw { statusCode: 401, message: 'INVALID_TOKEN' };
+      return decode;
+    });
 
     const query1 = 'UPDATE customers SET active = $1 WHERE email = $2 RETURNING *';
     const { rows: rows1 } = await client.query(query1, [true, sub]);
@@ -84,6 +101,9 @@ const verify = async ({ verifyToken }) => {
 
 const login = async ({ email, password }) => {
   const client = await pool.connect();
+
+  // FORMATEAR VALORES
+  email = email.toLowerCase().trim();
 
   try {
     await client.query('BEGIN');
