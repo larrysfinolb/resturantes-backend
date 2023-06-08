@@ -156,13 +156,13 @@ const recoverPassword = async ({ email }) => {
 
     const domain =
       process.env?.NODE_ENV === 'production'
-        ? 'https://green-stone-04b86be10.3.azurestaticapps.net/'
+        ? 'https://green-stone-04b86be10.3.azurestaticapps.net'
         : 'http://localhost:3000';
     const mail = {
       from: config.smtpEmail,
       to: email,
       subject: 'Actualiza tu contraseña',
-      html: `<a href="${domain}/recoverToken/${recoverToken}">Haz clic aquí</a>`,
+      html: `<a href="${domain}/login?recoverPassword=true&token=${recoverToken}">Haz clic aquí</a>`,
     };
     await sendMail(mail);
 
