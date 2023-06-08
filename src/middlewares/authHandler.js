@@ -5,14 +5,14 @@ const authJwtHandler = (secret) => {
     try {
       let { authorization } = req.headers;
 
-      if (!authorization) throw { statusCode: 401, statusMessage: 'Unauthorized' };
+      if (!authorization) throw { statusCode: 401, message: 'UNAUTHORIZED' };
 
       authorization = authorization.replace('Bearer ', '');
 
       jwt.verify(authorization, secret, (err, decoded) => {
-        if (err) {
-          throw { statusCode: 401, statusMessage: 'Unauthorized' };
-        }
+        if (err) throw { statusCode: 498, message: 'INVALID_TOKEN' };
+
+        req.user = decoded;
         next();
       });
     } catch (err) {
@@ -21,4 +21,15 @@ const authJwtHandler = (secret) => {
   };
 };
 
-export { authJwtHandler };
+const authRoleHandler = (role) => {
+  return (req, res, next) => {
+    try {
+      if (req.user.role !== role) throw { statusCode: 403, message: 'FORBIDDEN' };
+      next();
+    } catch (err) {
+      next(err);
+    }
+  };
+};
+
+export { authJwtHandler, authRoleHandler };
