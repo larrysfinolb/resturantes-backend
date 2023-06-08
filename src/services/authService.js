@@ -119,8 +119,8 @@ const login = async ({ email, password }) => {
 
     if (!isMatch) throw { statusCode: 401, message: 'WRONG_PASSWORD' };
 
-    const accessToken = jwt.sign({ sub: result1.id }, config.accessSecret, { expiresIn: '15m' });
-    const refreshToken = jwt.sign({ sub: result1.id }, config.refreshSecret, { expiresIn: '7d' });
+    const accessToken = jwt.sign({ sub: result1.id, role: 'customer' }, config.accessSecret, { expiresIn: '15m' });
+    const refreshToken = jwt.sign({ sub: result1.id, role: 'customer' }, config.refreshSecret, { expiresIn: '7d' });
 
     await client.query('COMMIT');
 
@@ -131,6 +131,12 @@ const login = async ({ email, password }) => {
   } finally {
     client.release();
   }
+};
+
+const refreshToken = async (user) => {
+  const accessToken = jwt.sign({ sub: user.id, role: 'customer' }, config.accessSecret, { expiresIn: '15m' });
+  const refreshToken = jwt.sign({ sub: user.id, role: 'customer' }, config.refreshSecret, { expiresIn: '7d' });
+  return { accessToken, refreshToken };
 };
 
 const recoverPassword = async ({ email }) => {
@@ -201,4 +207,4 @@ const changePassword = async ({ recoverToken, password }) => {
   }
 };
 
-export default { signup, verify, login, recoverPassword, changePassword };
+export default { signup, verify, login, refreshToken, recoverPassword, changePassword };

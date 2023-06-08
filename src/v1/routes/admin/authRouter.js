@@ -9,7 +9,12 @@ const authRouter = express.Router();
 
 authRouter.post('/login', schemaHandler(authSchema.login, 'body'), authController.login);
 
-authRouter.get('/refresh-token', authJwtHandler(config.refreshSecret), authController.refreshToken);
+authRouter.get(
+  '/refresh-token',
+  authJwtHandler(config.refreshSecret),
+  authRoleHandler('admin'),
+  authController.refreshToken
+);
 
 authRouter.patch(
   '/change-username-password',

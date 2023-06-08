@@ -40,6 +40,19 @@ const login = (req, res, next) => {
     });
 };
 
+const refreshToken = (req, res, next) => {
+  const { user } = req;
+
+  authService
+    .refreshToken(user)
+    .then((data) => {
+      res.status(200).json({ message: 'REFRESH_TOKEN', data });
+    })
+    .catch((err) => {
+      next(err);
+    });
+};
+
 const recoverPassword = (req, res, next) => {
   const { body } = req;
 
@@ -71,6 +84,7 @@ export default {
   signup,
   verify,
   login,
+  refreshToken,
   recoverPassword,
   changePassword,
 };
