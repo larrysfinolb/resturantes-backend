@@ -5,7 +5,7 @@ const password = Joi.string().regex(/^[\s\S]{8,}$/);
 
 const login = Joi.object({
   username: username.required(),
-  password: username.required(),
+  password: password.required(),
 });
 
 const changeUsernamePassword = Joi.object({
