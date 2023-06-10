@@ -3,8 +3,8 @@ import tableService from '../services/tableService.js';
 const getAllTables = (req, res, next) => {
   tableService
     .getAllTables()
-    .then((allTables) => {
-      res.status(200).json({ status: 'OK', data: allTables });
+    .then((data) => {
+      res.status(200).json({ message: 'TABLES_FOUND', data });
     })
     .catch((err) => {
       next(err);
@@ -12,12 +12,12 @@ const getAllTables = (req, res, next) => {
 };
 
 const getOneTable = (req, res, next) => {
-  const { tableId } = req.params;
+  const { params } = req;
 
   tableService
-    .getOneTable({ tableId })
-    .then((oneTable) => {
-      res.status(200).json({ status: 'OK', data: oneTable });
+    .getOneTable(params)
+    .then((data) => {
+      res.status(200).json({ message: 'TABLE_FOUND', data });
     })
     .catch((err) => {
       next(err);
@@ -25,10 +25,12 @@ const getOneTable = (req, res, next) => {
 };
 
 const createNewTable = (req, res, next) => {
+  const { body } = req;
+
   tableService
-    .createNewTable()
-    .then((newTable) => {
-      res.status(201).json({ status: 'Created', data: newTable });
+    .createNewTable(body)
+    .then((data) => {
+      res.status(201).json({ message: 'TABLE_CREATED', data });
     })
     .catch((err) => {
       next(err);
@@ -36,12 +38,13 @@ const createNewTable = (req, res, next) => {
 };
 
 const updateOneTable = (req, res, next) => {
-  const { tableId } = req.params;
+  const { params } = req;
+  const { body } = req;
 
   tableService
-    .updateOneTable({ tableId })
-    .then((updatedTable) => {
-      res.status(200).json({ status: 'OK', data: updatedTable });
+    .updateOneTable(params, body)
+    .then((data) => {
+      res.status(200).json({ message: 'TABLE_UPDATED', data });
     })
     .catch((err) => {
       next(err);
@@ -49,12 +52,12 @@ const updateOneTable = (req, res, next) => {
 };
 
 const deleteOneTable = (req, res, next) => {
-  const { tableId } = req.params;
+  const { params } = req;
 
   tableService
-    .deleteOneTable({ tableId })
-    .then((deletedTable) => {
-      res.status(200).json({ status: 'OK', data: deletedTable });
+    .deleteOneTable(params)
+    .then(() => {
+      res.status(200).json({ message: 'TABLE_DELETED', data: null });
     })
     .catch((err) => {
       next(err);
