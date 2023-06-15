@@ -4,7 +4,7 @@ import { pool } from '../libs/pg.js';
 import { config } from '../config/index.js';
 import { sendMail } from '../libs/nodemailer.js';
 
-const signup = async ({ fullName, email, dni, phone, password }) => {
+const signup = async ({ fullName, email, dni, phone, password, tableId }) => {
   const client = await pool.connect();
 
   // FORMATEAR VALORES
@@ -16,36 +16,42 @@ const signup = async ({ fullName, email, dni, phone, password }) => {
   try {
     await client.query('BEGIN');
 
-    // VALIDAR QUE EL EMAIL NO ESTE EN USO
-    const query1 = 'SELECT id, active FROM customers WHERE email = $1';
-    const { rows: rows1 } = await client.query(query1, [email]);
+    // VALIDAR QUE LA MESA EXISTA
+    const query1 = 'SELECT * FROM tables WHERE id = $1';
+    const { rows: rows1 } = await client.query(query1, [tableId]);
     const result1 = rows1[0];
-    if (result1?.active) throw { statusCode: 409, message: 'EMAIL_IN_USE' };
+    if (!result1) throw { statusCode: 404, message: 'TABLE_NOT_FOUND' };
+
+    // VALIDAR QUE EL EMAIL NO ESTE EN USO
+    const query2 = 'SELECT id, active FROM customers WHERE email = $1';
+    const { rows: rows2 } = await client.query(query2, [email]);
+    const result2 = rows2[0];
+    if (result2?.active) throw { statusCode: 409, message: 'EMAIL_IN_USE' };
 
     // VALIDAR QUE EL DNI NO ESTE EN USO
-    const query2 = 'SELECT id, active FROM customers WHERE dni = $1';
-    const { rows: rows2 } = await client.query(query2, [dni]);
-    const result2 = rows2[0];
-    if (result2?.active) throw { statusCode: 409, message: 'DNI_IN_USE' };
+    const query3 = 'SELECT id, active FROM customers WHERE dni = $1';
+    const { rows: rows3 } = await client.query(query3, [dni]);
+    const result3 = rows3[0];
+    if (result3?.active) throw { statusCode: 409, message: 'DNI_IN_USE' };
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const verifyToken = jwt.sign({ sub: email }, config.verifySecret, { expiresIn: '7d' });
 
-    let query3;
-    let result3;
+    let query4;
+    let result4;
 
-    if (result1 || result2) {
-      const id = result1?.id || result2?.id;
-      query3 =
+    if (result2 || result3) {
+      const id = result2?.id || result3?.id;
+      query4 =
         'UPDATE customers SET "fullName" = $1, "email" = $2, "dni" = $3, "phone" = $4, "password" = $5 WHERE id = $6 RETURNING *';
-      const { rows: rows3 } = await client.query(query3, [fullName, email, dni, phone, hashedPassword, id]);
-      result3 = rows3[0];
+      const { rows: rows4 } = await client.query(query4, [fullName, email, dni, phone, hashedPassword, id]);
+      result4 = rows4[0];
     } else {
-      query3 =
+      query4 =
         'INSERT INTO customers ("fullName", "email", "dni", "phone", "password") VALUES ($1, $2, $3, $4, $5) RETURNING *';
-      const { rows: rows3 } = await client.query(query3, [fullName, email, dni, phone, hashedPassword]);
-      result3 = rows3[0];
+      const { rows: rows4 } = await client.query(query4, [fullName, email, dni, phone, hashedPassword]);
+      result4 = rows4[0];
     }
 
     const domain =
@@ -56,14 +62,14 @@ const signup = async ({ fullName, email, dni, phone, password }) => {
       from: config.smtpEmail,
       to: email,
       subject: 'Verifica tu cuenta',
-      html: `<a href="${domain}/login?token=${verifyToken}">Haz clic aquí</a>`,
+      html: `<a href="${domain}/login/${tableId}?token=${verifyToken}">Haz clic aquí</a>`,
     };
     await sendMail(mail);
 
     await client.query('COMMIT');
-    delete result3.password;
-    delete result3.active;
-    return result3;
+    delete result4.password;
+    delete result4.active;
+    return result4;
   } catch (err) {
     await client.query('ROLLBACK');
     throw err;
