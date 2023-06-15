@@ -44,6 +44,28 @@ const getOneTable = async ({ tableId }) => {
   }
 };
 
+const updateStateTable = async ({ tableId }, { state }) => {
+  const client = await pool.connect();
+
+  try {
+    await client.query('BEGIN');
+
+    const query1 = 'UPDATE tables SET state = $1 WHERE id = $2 RETURNING *';
+    const { rows: rows1 } = await client.query(query1, [state, tableId]);
+    const result1 = rows1[0];
+    if (!result1) throw { statusCode: 404, message: 'TABLE_NOT_FOUND' };
+
+    await client.query('COMMIT');
+
+    return result1;
+  } catch (err) {
+    await client.query('ROLLBACK');
+    throw err;
+  } finally {
+    client.release();
+  }
+};
+
 const createNewTable = async ({ description }) => {
   const client = await pool.connect();
   try {
@@ -109,4 +131,4 @@ const deleteOneTable = async ({ tableId }) => {
   }
 };
 
-export default { getAllTables, getOneTable, createNewTable, updateOneTable, deleteOneTable };
+export default { getAllTables, getOneTable, updateStateTable, createNewTable, updateOneTable, deleteOneTable };
