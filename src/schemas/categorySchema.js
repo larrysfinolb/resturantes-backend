@@ -2,24 +2,22 @@ import Joi from 'joi';
 
 const id = Joi.string().regex(/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/);
 const name = Joi.string().regex(/^[\w\s\-_,.()À-ÿ]{1,50}$/);
-const price = Joi.number().min(0).max(9999.99);
+const description = Joi.string().regex(/^[\w\s\-_,.()À-ÿ]{1,50}$/);
 const imageUrl = Joi.string().regex(/^(http(s?):\/\/)?(([\w-]+\.)+[\w-]+)(\/[\w- ;,./?%&=]*)?$/);
 
 const schemaParams = Joi.object({
-  dishId: id.required(),
+  categoryId: id.required(),
 });
 
 const schemaBodyCreate = Joi.object({
-  categoryId: id,
   name: name.required(),
-  price: price.required(),
+  description,
   imageUrl,
 });
 
 const schemaBodyUpdate = Joi.object({
-  categoryId: id,
   name,
-  price,
+  description,
   imageUrl,
 });
 

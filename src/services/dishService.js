@@ -44,14 +44,14 @@ const getOneDish = async ({ dishId }) => {
   }
 };
 
-const createNewDish = async ({ name, price, imageUrl }) => {
+const createNewDish = async ({ name, price, imageUrl, categoryId }) => {
   const client = await pool.connect();
 
   try {
     await client.query('BEGIN');
 
-    const query1 = `INSERT INTO dishes (name, price, "imageUrl") VALUES ($1, $2, $3) RETURNING *`;
-    const { rows: rows1 } = await client.query(query1, [name, price, imageUrl]);
+    const query1 = `INSERT INTO dishes (name, price, "imageUrl", "categoryId") VALUES ($1, $2, $3, $4) RETURNING *`;
+    const { rows: rows1 } = await client.query(query1, [name, price, imageUrl, categoryId]);
     const result1 = rows1[0];
     if (!result1) throw { statusCode: 500, message: 'DISH_NOT_CREATED' };
 
@@ -66,15 +66,15 @@ const createNewDish = async ({ name, price, imageUrl }) => {
   }
 };
 
-const updateOneDish = async ({ dishId }, { name, price, imageUrl }) => {
+const updateOneDish = async ({ dishId }, { name, price, imageUrl, categoryId }) => {
   const client = await pool.connect();
 
   try {
     await client.query('BEGIN');
 
     const query1 =
-      'UPDATE dishes SET name = COALESCE($1, name), price = COALESCE($2, price), "imageUrl" = COALESCE($3, "imageUrl") WHERE id = $4 RETURNING *';
-    const { rows: rows1 } = await client.query(query1, [name, price, imageUrl, dishId]);
+      'UPDATE dishes SET name = COALESCE($1, name), price = COALESCE($2, price), "imageUrl" = COALESCE($3, "imageUrl"), "categoryId" = COALESCE($4, "categoryId") WHERE id = $5 RETURNING *';
+    const { rows: rows1 } = await client.query(query1, [name, price, imageUrl, categoryId, dishId]);
     const result1 = rows1[0];
     if (!result1) throw { statusCode: 404, message: 'DISH_NOT_FOUND' };
 
