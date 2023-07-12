@@ -42,7 +42,7 @@ const login = (req, res, next) => {
 
 const refreshToken = (req, res, next) => {
   const { user } = req;
-
+  console.log(user);
   authService
     .refreshToken(user)
     .then((data) => {

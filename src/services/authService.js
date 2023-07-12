@@ -139,9 +139,10 @@ const login = async ({ email, password }) => {
   }
 };
 
-const refreshToken = async (user) => {
-  const accessToken = jwt.sign({ sub: user.id, role: 'customer' }, config.accessSecret, { expiresIn: '15m' });
-  const refreshToken = jwt.sign({ sub: user.id, role: 'customer' }, config.refreshSecret, { expiresIn: '7d' });
+const refreshToken = async ({ sub }) => {
+  console.log(sub);
+  const accessToken = jwt.sign({ sub, role: 'customer' }, config.accessSecret, { expiresIn: '15m' });
+  const refreshToken = jwt.sign({ sub, role: 'customer' }, config.refreshSecret, { expiresIn: '7d' });
   return { accessToken, refreshToken };
 };
 
