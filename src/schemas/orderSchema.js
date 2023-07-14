@@ -2,7 +2,7 @@ import Joi from 'joi';
 
 const id = Joi.string().regex(/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/);
 const quantity = Joi.number().min(1).max(99);
-const details = Joi.string().regex(/^[\w\s\-_,.()À-ÿ]{1,500}$/);
+const details = Joi.string().allow(null, '');
 
 const schemaParams = Joi.object({
   orderId: id.required(),
