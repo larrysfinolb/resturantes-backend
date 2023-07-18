@@ -6,6 +6,7 @@ import dishRouter from './dishRouter.js';
 import categoryRouter from './categoryRouter.js';
 import ordersRouter from './orderRouter.js';
 import customerRouter from './customerRouter.js';
+import paymentRouter from './paymentRouter.js';
 
 const v1Router = express.Router();
 
@@ -16,5 +17,6 @@ v1Router.use('/dishes', dishRouter);
 v1Router.use('/categories', categoryRouter);
 v1Router.use('/orders', ordersRouter);
 v1Router.use('/customers', customerRouter);
+v1Router.use('/payments', paymentRouter);
 
 export default v1Router;
