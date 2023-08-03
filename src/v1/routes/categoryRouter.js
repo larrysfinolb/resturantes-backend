@@ -7,11 +7,7 @@ import { config } from '../../config/index.js';
 import multer from 'multer';
 const categoryRouter = express.Router();
 
-categoryRouter.get(
-  '/',
-  // authJwtHandler(config.accessSecret),
-  categoryController.getAllCategories
-);
+categoryRouter.get('/', authJwtHandler(config.accessSecret), categoryController.getAllCategories);
 
 categoryRouter.get(
   '/:categoryId',
@@ -31,8 +27,8 @@ categoryRouter.post(
 
 categoryRouter.patch(
   '/:categoryId',
-  // authJwtHandler(config.accessSecret),
-  // authRoleHandler('admin'),
+  authJwtHandler(config.accessSecret),
+  authRoleHandler('admin'),
   multer().single('image'),
   schemaHandler(categorySchema.schemaParams, 'params'),
   schemaHandler(categorySchema.schemaBodyUpdate, 'body'),
