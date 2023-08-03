@@ -17,10 +17,10 @@ const getOnePayment = (req, res, next) => {
 };
 
 const createNewPayment = (req, res, next) => {
-  const { body } = req;
+  const { body, file } = req;
 
   paymentService
-    .createNewPayment(body)
+    .createNewPayment(body, file)
     .then((data) => res.status(201).json({ message: 'PAYMENT_CREATED', data }))
     .catch((err) => next(err));
 };

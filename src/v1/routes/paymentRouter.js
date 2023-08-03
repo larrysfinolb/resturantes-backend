@@ -4,6 +4,7 @@ import { config } from '../../config/index.js';
 import { schemaHandler } from '../../middlewares/schemaHandler.js';
 import paymentSchema from '../../schemas/paymentSchema.js';
 import paymentController from '../../controllers/paymentController.js';
+import multer from 'multer';
 
 const paymentRouter = express.Router();
 
@@ -20,6 +21,7 @@ paymentRouter.post(
   '/',
   authJwtHandler(config.accessSecret),
   authRoleHandler('customer'),
+  multer().single('voucher'),
   schemaHandler(paymentSchema.schemaBodyCreate, 'body'),
   paymentController.createNewPayment
 );
