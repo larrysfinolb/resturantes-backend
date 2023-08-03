@@ -21,10 +21,10 @@ const getOneDish = (req, res, next) => {
 };
 
 const createNewDish = (req, res, next) => {
-  const { body } = req;
+  const { body, file } = req;
 
   dishService
-    .createNewDish(body)
+    .createNewDish(body, file)
     .then((data) => {
       res.status(201).json({ message: 'DISH_CREATED', data });
     })
@@ -32,11 +32,10 @@ const createNewDish = (req, res, next) => {
 };
 
 const updateOneDish = (req, res, next) => {
-  const { params } = req;
-  const { body } = req;
+  const { params, body, file } = req;
 
   dishService
-    .updateOneDish(params, body)
+    .updateOneDish(params, body, file)
     .then((data) => {
       res.status(200).json({ message: 'DISH_UPDATED', data });
     })

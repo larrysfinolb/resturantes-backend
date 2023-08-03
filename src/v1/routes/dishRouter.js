@@ -4,6 +4,7 @@ import { schemaHandler } from '../../middlewares/schemaHandler.js';
 import { authJwtHandler, authRoleHandler } from '../../middlewares/authHandler.js';
 import dishSchema from '../../schemas/dishSchema.js';
 import { config } from '../../config/index.js';
+import multer from 'multer';
 
 const dishRouter = express.Router();
 
@@ -20,6 +21,7 @@ dishRouter.post(
   '/',
   authJwtHandler(config.accessSecret),
   authRoleHandler('admin'),
+  multer().single('image'),
   schemaHandler(dishSchema.schemaBodyCreate, 'body'),
   dishController.createNewDish
 );
@@ -28,6 +30,7 @@ dishRouter.patch(
   '/:dishId',
   authJwtHandler(config.accessSecret),
   authRoleHandler('admin'),
+  multer().single('image'),
   schemaHandler(dishSchema.schemaParams, 'params'),
   schemaHandler(dishSchema.schemaBodyUpdate, 'body'),
   dishController.updateOneDish
