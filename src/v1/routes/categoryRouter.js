@@ -4,10 +4,14 @@ import categorySchema from '../../schemas/categorySchema.js';
 import { schemaHandler } from '../../middlewares/schemaHandler.js';
 import { authJwtHandler, authRoleHandler } from '../../middlewares/authHandler.js';
 import { config } from '../../config/index.js';
-
+import multer from 'multer';
 const categoryRouter = express.Router();
 
-categoryRouter.get('/', authJwtHandler(config.accessSecret), categoryController.getAllCategories);
+categoryRouter.get(
+  '/',
+  // authJwtHandler(config.accessSecret),
+  categoryController.getAllCategories
+);
 
 categoryRouter.get(
   '/:categoryId',
@@ -20,14 +24,16 @@ categoryRouter.post(
   '/',
   authJwtHandler(config.accessSecret),
   authRoleHandler('admin'),
+  multer().single('image'),
   schemaHandler(categorySchema.schemaBodyCreate, 'body'),
   categoryController.createNewCategory
 );
 
 categoryRouter.patch(
   '/:categoryId',
-  authJwtHandler(config.accessSecret),
-  authRoleHandler('admin'),
+  // authJwtHandler(config.accessSecret),
+  // authRoleHandler('admin'),
+  multer().single('image'),
   schemaHandler(categorySchema.schemaParams, 'params'),
   schemaHandler(categorySchema.schemaBodyUpdate, 'body'),
   categoryController.updateOneCategory

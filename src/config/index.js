@@ -14,6 +14,7 @@ const config = {
   verifySecret: process.env.VERIFY_SECRET,
   accessSecret: process.env.ACCESS_SECRET,
   refreshSecret: process.env.REFRESH_SECRET,
+  azureStorageConnectionString: process.env.AZURE_STORAGE_CONNECTION_STRING,
 };
 
 export { config };

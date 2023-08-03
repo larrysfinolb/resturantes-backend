@@ -21,10 +21,10 @@ const getOneCategory = (req, res, next) => {
 };
 
 const createNewCategory = (req, res, next) => {
-  const { body } = req;
+  const { body, file } = req;
 
   categoryService
-    .createNewCategory(body)
+    .createNewCategory(body, file)
     .then((data) => {
       res.status(201).json({ message: 'CATEGORY_CREATED', data });
     })
@@ -32,11 +32,10 @@ const createNewCategory = (req, res, next) => {
 };
 
 const updateOneCategory = (req, res, next) => {
-  const { params } = req;
-  const { body } = req;
+  const { params, body, file } = req;
 
   categoryService
-    .updateOneCategory(params, body)
+    .updateOneCategory(params, body, file)
     .then((data) => {
       res.status(200).json({ message: 'CATEGORY_UPDATED', data });
     })
