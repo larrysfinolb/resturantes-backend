@@ -1,8 +1,10 @@
 import dishService from '../services/dishService.js';
 
 const getAllDishes = (req, res, next) => {
+  const { query } = req;
+
   dishService
-    .getAllDishes()
+    .getAllDishes(query)
     .then((data) => {
       res.status(200).json({ message: 'DISHES_FOUND', data });
     })
