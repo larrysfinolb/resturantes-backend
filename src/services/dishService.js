@@ -7,7 +7,8 @@ const getAllDishes = async () => {
   try {
     await client.query('BEGIN');
 
-    const query1 = 'SELECT * FROM dishes';
+    const query1 =
+      'SELECT dishes.*, categories.name as "categoryName" FROM dishes JOIN categories ON dishes."categoryId" = categories.id';
     const { rows: rows1 } = await client.query(query1);
     const result1 = rows1;
     if (result1.length <= 0) throw { statusCode: 404, message: 'DISHES_NOT_FOUND' };
