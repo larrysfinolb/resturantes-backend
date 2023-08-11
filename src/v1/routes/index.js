@@ -7,6 +7,7 @@ import categoryRouter from './categoryRouter.js';
 import ordersRouter from './orderRouter.js';
 import customerRouter from './customerRouter.js';
 import paymentRouter from './paymentRouter.js';
+import bankRouter from './bankRouter.js';
 
 const v1Router = express.Router();
 
@@ -18,5 +19,6 @@ v1Router.use('/categories', categoryRouter);
 v1Router.use('/orders', ordersRouter);
 v1Router.use('/customers', customerRouter);
 v1Router.use('/payments', paymentRouter);
+v1Router.use('/banks', bankRouter);
 
 export default v1Router;
