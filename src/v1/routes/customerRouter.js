@@ -28,4 +28,11 @@ customerRouter.get(
   customerController.getAllOrdersByCustomer
 );
 
+customerRouter.get(
+  '/:customerId/payments',
+  authJwtHandler(config.accessSecret),
+  schemaHandler(customerSchema.schemaParams, 'params'),
+  customerController.getAllPaymentsByCustomer
+);
+
 export default customerRouter;

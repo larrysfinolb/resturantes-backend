@@ -1,12 +1,12 @@
 import { pool } from '../libs/pg.js';
 
-const getAllOrders = async () => {
+const getAllOrders = async ({ inDebt }) => {
   const client = await pool.connect();
 
   try {
     await client.query('BEGIN');
 
-    const query1 = `SELECT orders.id, orders."customerId", orders."tableId", orders.total, orders."createdAt",
+    let query1 = `SELECT orders.id, orders."customerId", orders."tableId", orders.total, orders.debt, orders."createdAt",
       JSON_AGG (
         JSON_BUILD_OBJECT (
           'id', dishes_orders.id,
@@ -15,9 +15,15 @@ const getAllOrders = async () => {
           'details', dishes_orders.details,
           'createdAt', dishes_orders."createdAt"
         )
-      ) as dishes_orders FROM orders 
-      JOIN dishes_orders ON orders.id = dishes_orders."orderId"
-      JOIN dishes ON dishes.id = dishes_orders."dishId" GROUP BY orders.id`;
+      ) as dishes_orders FROM orders
+      JOIN dishes_orders ON orders.id = dishes_orders."orderId" `;
+    query1 +=
+      inDebt === 'true'
+        ? `WHERE orders.debt > 0 GROUP BY orders.id`
+        : inDebt === 'false'
+        ? `WHERE orders.debt <= 0 GROUP BY orders.id`
+        : `GROUP BY orders.id`;
+
     const { rows: rows1 } = await client.query(query1);
     const result1 = rows1;
     if (result1.length <= 0) throw { statusCode: 404, message: 'ORDERS_NOT_FOUND' };
@@ -39,7 +45,7 @@ const getOneOrder = async ({ orderId }) => {
   try {
     await client.query('BEGIN');
 
-    const query1 = `SELECT orders.id, orders."customerId", orders."tableId", orders.total, orders."createdAt",
+    const query1 = `SELECT orders.id, orders."customerId", orders."tableId", orders.total, orders.debt, orders."createdAt",
     JSON_AGG (
       JSON_BUILD_OBJECT (
         'id', dishes_orders.id,
@@ -50,7 +56,6 @@ const getOneOrder = async ({ orderId }) => {
       )
     ) as dishes_orders FROM orders 
     JOIN dishes_orders ON orders.id = dishes_orders."orderId"
-    JOIN dishes ON dishes.id = dishes_orders."dishId"
     WHERE orders.id = $1 GROUP BY orders.id`;
     const { rows: rows1 } = await client.query(query1, [orderId]);
     const result1 = rows1[0];
@@ -82,7 +87,7 @@ const createNewOrder = async ({ customerId }, { tableId, dishes }) => {
       })
     );
     console.log(customerId);
-    const query1 = 'INSERT INTO orders ("customerId", "tableId", "total") VALUES ($1, $2, $3) RETURNING *';
+    const query1 = 'INSERT INTO orders ("customerId", "tableId", "total", "debt") VALUES ($1, $2, $3, $3) RETURNING *';
     const { rows: rows1 } = await client.query(query1, [customerId, tableId, totals.reduce((a, b) => a + b, 0)]);
     const result1 = rows1[0];
     if (!result1) throw { statusCode: 500, message: 'ORDER_NOT_CREATED' };

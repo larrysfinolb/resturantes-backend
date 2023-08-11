@@ -1,8 +1,10 @@
 import paymentService from '../services/paymentService.js';
 
 const getAllPayments = (req, res, next) => {
+  const { query } = req;
+
   paymentService
-    .getAllPayments()
+    .getAllPayments(query)
     .then((data) => res.status(200).json({ message: 'PAYMENTS_FOUND', data }))
     .catch((err) => next(err));
 };

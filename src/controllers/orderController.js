@@ -1,8 +1,10 @@
 import orderService from '../services/orderService.js';
 
 const getAllOrders = (req, res, next) => {
+  const { query } = req;
+
   orderService
-    .getAllOrders()
+    .getAllOrders(query)
     .then((data) => res.status(200).json({ message: 'ORDERS_FOUND', data }))
     .catch((err) => next(err));
 };

@@ -17,12 +17,21 @@ const getOneCustomer = (req, res, next) => {
 };
 
 const getAllOrdersByCustomer = (req, res, next) => {
-  const { params } = req;
+  const { query, params } = req;
 
   customerService
-    .getAllOrdersByCustomer(params)
+    .getAllOrdersByCustomer(query, params)
     .then((data) => res.status(200).json({ message: 'ORDERS_FOUND', status: data }))
     .catch((err) => next(err));
 };
 
-export default { getAllCustomers, getOneCustomer, getAllOrdersByCustomer };
+const getAllPaymentsByCustomer = (req, res, next) => {
+  const { query, params } = req;
+
+  customerService
+    .getAllPaymentsByCustomer(query, params)
+    .then((data) => res.status(200).json({ message: 'PAYMENTS_FOUND', status: data }))
+    .catch((err) => next(err));
+};
+
+export default { getAllCustomers, getOneCustomer, getAllOrdersByCustomer, getAllPaymentsByCustomer };
