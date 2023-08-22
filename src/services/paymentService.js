@@ -7,15 +7,21 @@ const getAllPayments = async ({ status }) => {
   try {
     await client.query('BEGIN');
 
-    let query1 = 'SELECT * FROM payments ';
+    let query1 = `SELECT payments.*, JSON_AGG (
+      JSON_BUILD_OBJECT (
+        'id', customers.id,
+        'fullName', customers."fullName"
+      )
+    ) as customer FROM payments 
+    JOIN orders ON payments."orderId" = orders.id JOIN customers ON orders."customerId" = customers.id `;
     query1 +=
       status === 'pending'
-        ? `WHERE status = 'pending'`
+        ? `WHERE status = 'pending' GROUP BY payments.id`
         : status === 'approved'
-        ? `WHERE status = 'approved'`
+        ? `WHERE status = 'approved' GROUP BY payments.id`
         : status === 'rejected'
-        ? `WHERE status = 'rejected'`
-        : '';
+        ? `WHERE status = 'rejected' GROUP BY payments.id`
+        : 'GROUP BY payments.id';
     const { rows: rows1 } = await client.query(query1);
     const result1 = rows1;
     if (result1.length <= 0) throw { statusCode: 404, message: 'PAYMENTS_NOT_FOUND' };
@@ -37,7 +43,14 @@ const getOnePayment = async ({ paymentId }) => {
   try {
     await client.query('BEGIN');
 
-    const query1 = 'SELECT * FROM payments WHERE id = $1';
+    const query1 = `SELECT payments.*, JSON_AGG (
+      JSON_BUILD_OBJECT (
+        'id', customers.id,
+        'fullName', customers."fullName"
+      )
+    ) as customer FROM payments 
+    JOIN orders ON payments."orderId" = orders.id JOIN customers ON orders."customerId" = customers.id 
+    WHERE payments.id = $1 GROUP BY payments.id`;
     const { rows: rows1 } = await client.query(query1, [paymentId]);
     const result1 = rows1[0];
     if (!result1) throw { statusCode: 404, message: 'PAYMENT_NOT_FOUND' };

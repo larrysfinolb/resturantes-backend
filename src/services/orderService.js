@@ -13,10 +13,17 @@ const getAllOrders = async ({ inDebt }) => {
           'dishId', dishes_orders."dishId",
           'quantity', dishes_orders.quantity,
           'details', dishes_orders.details,
-          'createdAt', dishes_orders."createdAt"
+          'createdAt', dishes_orders."createdAt",
+          'dish', JSON_BUILD_OBJECT (
+            'id', dishes.id,
+            'name', dishes.name,
+            'price', dishes.price,
+            'imageUrl', dishes."imageUrl",
+            'categoryId', dishes."categoryId",
+            'createdAt', dishes."createdAt"
+          )
         )
-      ) as dishes_orders FROM orders
-      JOIN dishes_orders ON orders.id = dishes_orders."orderId" `;
+      ) as dishes_orders FROM orders JOIN dishes_orders ON orders.id = dishes_orders."orderId" JOIN dishes ON dishes_orders."dishId" = dishes.id `;
     query1 +=
       inDebt === 'true'
         ? `WHERE orders.debt > 0 GROUP BY orders.id`
@@ -46,17 +53,24 @@ const getOneOrder = async ({ orderId }) => {
     await client.query('BEGIN');
 
     const query1 = `SELECT orders.id, orders."customerId", orders."tableId", orders.total, orders.debt, orders."createdAt",
-    JSON_AGG (
-      JSON_BUILD_OBJECT (
-        'id', dishes_orders.id,
-        'dishId', dishes_orders."dishId",
-        'quantity', dishes_orders.quantity,
-        'details', dishes_orders.details,
-        'createdAt', dishes_orders."createdAt"
-      )
-    ) as dishes_orders FROM orders 
-    JOIN dishes_orders ON orders.id = dishes_orders."orderId"
-    WHERE orders.id = $1 GROUP BY orders.id`;
+      JSON_AGG (
+        JSON_BUILD_OBJECT (
+          'id', dishes_orders.id,
+          'dishId', dishes_orders."dishId",
+          'quantity', dishes_orders.quantity,
+          'details', dishes_orders.details,
+          'createdAt', dishes_orders."createdAt",
+          'dish', JSON_BUILD_OBJECT (
+            'id', dishes.id,
+            'name', dishes.name,
+            'price', dishes.price,
+            'imageUrl', dishes."imageUrl",
+            'categoryId', dishes."categoryId",
+            'createdAt', dishes."createdAt"
+          )
+        )
+      ) as dishes_orders FROM orders JOIN dishes_orders ON orders.id = dishes_orders."orderId" 
+      JOIN dishes ON dishes_orders."dishId" = dishes.id WHERE orders.id = $1 GROUP BY orders.id`;
     const { rows: rows1 } = await client.query(query1, [orderId]);
     const result1 = rows1[0];
     if (!result1) throw { statusCode: 404, message: 'ORDER_NOT_FOUND' };
