@@ -91,18 +91,18 @@ const updateOneCategory = async ({ categoryId }, { name, description }, file) =>
 };
 
 const deleteOneCategory = async ({ categoryId }) => {
-  const client = pool.connect();
+  const client = await pool.connect();
 
   try {
     await client.query('BEGIN');
 
     const query1 = `UPDATE categories SET "isDeleted" = true WHERE id = $1 RETURNING *`;
-    const { rows: rows1 } = await pool.query(query1, [categoryId]);
+    const { rows: rows1 } = await client.query(query1, [categoryId]);
     const result1 = rows1[0];
     if (!result1) throw { statusCode: 404, message: 'CATEGORY_NOT_FOUND' };
 
     const query2 = `UPDATE dishes SET "categoryId" = null WHERE "categoryId" = $1 RETURNING *`;
-    const { rows: rows2 } = await pool.query(query2, [categoryId]);
+    const { rows: rows2 } = await client.query(query2, [categoryId]);
     const result2 = rows2;
     if (!result2) throw { statusCode: 500, message: 'CATEGORY_NOT_DELETED' };
 
