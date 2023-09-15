@@ -2,7 +2,7 @@ import Joi from 'joi';
 
 const fullName = Joi.string().regex(/^[A-Za-zÀ-ÿ\s']+$/);
 const email = Joi.string().regex(/^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/);
-const dni = Joi.string().regex(/^[0-9]{7,}$/);
+const dni = Joi.string().regex(/^[0-9]{7,8}$/);
 const phone = Joi.string().regex(/^\+?\d{1,3}[-.\s]?\(?\d{1,3}\)?[-.\s]?\d{1,4}[-.\s]?\d{1,4}$/);
 const password = Joi.string().regex(/^[\s\S]{8,}$/);
 const tableId = Joi.string().regex(/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/);

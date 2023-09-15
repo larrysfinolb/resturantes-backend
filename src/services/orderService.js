@@ -6,11 +6,10 @@ const getAllOrders = async ({ inDebt }) => {
   try {
     await client.query('BEGIN');
 
-    let query1 = `SELECT orders.id, orders."customerId", orders."tableId", orders.total, orders.debt, orders."createdAt",
+    let query1 = `SELECT orders.id, orders."tableId", orders.total, orders.debt, orders."createdAt",
       JSON_AGG (
         JSON_BUILD_OBJECT (
           'id', dishes_orders.id,
-          'dishId', dishes_orders."dishId",
           'quantity', dishes_orders.quantity,
           'details', dishes_orders.details,
           'createdAt', dishes_orders."createdAt",
@@ -23,13 +22,20 @@ const getAllOrders = async ({ inDebt }) => {
             'createdAt', dishes."createdAt"
           )
         )
-      ) as dishes_orders FROM orders JOIN dishes_orders ON orders.id = dishes_orders."orderId" JOIN dishes ON dishes_orders."dishId" = dishes.id `;
+      ) as dishes_orders,
+      JSON_BUILD_OBJECT (
+        'id', customers.id,
+        'fullName', customers."fullName"
+      ) as customer FROM orders 
+      JOIN dishes_orders ON orders.id = dishes_orders."orderId" 
+      JOIN dishes ON dishes_orders."dishId" = dishes.id 
+      JOIN customers ON orders."customerId" = customers.id `;
     query1 +=
       inDebt === 'true'
-        ? `WHERE orders.debt > 0 GROUP BY orders.id`
+        ? `WHERE orders.debt > 0 GROUP BY orders.id, customers.id`
         : inDebt === 'false'
-        ? `WHERE orders.debt <= 0 GROUP BY orders.id`
-        : `GROUP BY orders.id`;
+        ? `WHERE orders.debt <= 0 GROUP BY orders.id, customers.id`
+        : `GROUP BY orders.id, customers.id`;
 
     const { rows: rows1 } = await client.query(query1);
     const result1 = rows1;
@@ -52,11 +58,10 @@ const getOneOrder = async ({ orderId }) => {
   try {
     await client.query('BEGIN');
 
-    const query1 = `SELECT orders.id, orders."customerId", orders."tableId", orders.total, orders.debt, orders."createdAt",
+    const query1 = `SELECT orders.id, orders."tableId", orders.total, orders.debt, orders."createdAt",
       JSON_AGG (
         JSON_BUILD_OBJECT (
           'id', dishes_orders.id,
-          'dishId', dishes_orders."dishId",
           'quantity', dishes_orders.quantity,
           'details', dishes_orders.details,
           'createdAt', dishes_orders."createdAt",
@@ -69,8 +74,15 @@ const getOneOrder = async ({ orderId }) => {
             'createdAt', dishes."createdAt"
           )
         )
-      ) as dishes_orders FROM orders JOIN dishes_orders ON orders.id = dishes_orders."orderId" 
-      JOIN dishes ON dishes_orders."dishId" = dishes.id WHERE orders.id = $1 GROUP BY orders.id`;
+      ) as dishes_orders,
+      JSON_BUILD_OBJECT (
+        'id', customers.id,
+        'fullName', customers."fullName"
+      ) as customer FROM orders 
+      JOIN dishes_orders ON orders.id = dishes_orders."orderId" 
+      JOIN dishes ON dishes_orders."dishId" = dishes.id 
+      JOIN customers ON orders."customerId" = customers.id
+      WHERE orders.id = $1 GROUP BY orders.id, customers.id`;
     const { rows: rows1 } = await client.query(query1, [orderId]);
     const result1 = rows1[0];
     if (!result1) throw { statusCode: 404, message: 'ORDER_NOT_FOUND' };
