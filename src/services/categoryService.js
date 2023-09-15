@@ -91,17 +91,35 @@ const updateOneCategory = async ({ categoryId }, { name, description }, file) =>
 };
 
 const deleteOneCategory = async ({ categoryId }) => {
-  const query1 = `UPDATE categories SET "isDeleted" = true WHERE id = $1 RETURNING *`;
-  const { rows: rows1 } = await pool.query(query1, [categoryId]);
-  const result1 = rows1[0];
-  if (!result1) throw { statusCode: 404, message: 'CATEGORY_NOT_FOUND' };
+  const client = pool.connect();
 
-  if (result1.imageUrl) {
-    const blobName = result1.imageUrl.split('/').pop();
-    await storageBlob.deleteBlob('categories', blobName);
+  try {
+    await client.query('BEGIN');
+
+    const query1 = `UPDATE categories SET "isDeleted" = true WHERE id = $1 RETURNING *`;
+    const { rows: rows1 } = await pool.query(query1, [categoryId]);
+    const result1 = rows1[0];
+    if (!result1) throw { statusCode: 404, message: 'CATEGORY_NOT_FOUND' };
+
+    const query2 = `UPDATE dishes SET "categoryId" = null WHERE "categoryId" = $1 RETURNING *`;
+    const { rows: rows2 } = await pool.query(query2, [categoryId]);
+    const result2 = rows2;
+    if (!result2) throw { statusCode: 500, message: 'CATEGORY_NOT_DELETED' };
+
+    if (result1.imageUrl) {
+      const blobName = result1.imageUrl.split('/').pop();
+      await storageBlob.deleteBlob('categories', blobName);
+    }
+
+    await client.query('COMMIT');
+
+    return result1;
+  } catch (error) {
+    await client.query('ROLLBACK');
+    throw error;
+  } finally {
+    client.release();
   }
-
-  return result1;
 };
 
 const getAllDishesByCategory = async ({ categoryId }) => {
