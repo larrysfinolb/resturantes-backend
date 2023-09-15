@@ -140,26 +140,34 @@ const login = async ({ email, password }) => {
 };
 
 const refreshToken = async ({ sub }) => {
-  console.log(sub);
   const accessToken = jwt.sign({ sub, role: 'customer' }, config.accessSecret, { expiresIn: '15m' });
   const refreshToken = jwt.sign({ sub, role: 'customer' }, config.refreshSecret, { expiresIn: '7d' });
   return { accessToken, refreshToken };
 };
 
-const recoverPassword = async ({ email }) => {
+const recoverPassword = async ({ email, tableId }) => {
   const client = await pool.connect();
+
+  // FORMATEAR VALORES
+  email = email.toLowerCase().trim();
 
   try {
     await client.query('BEGIN');
 
-    const query1 = 'SELECT * FROM customers WHERE email = $1';
-    const { rows: rows1 } = await client.query(query1, [email]);
+    // VALIDAR QUE LA MESA EXISTA
+    const query1 = 'SELECT * FROM tables WHERE id = $1';
+    const { rows: rows1 } = await client.query(query1, [tableId]);
     const result1 = rows1[0];
+    if (!result1) throw { statusCode: 404, message: 'TABLE_NOT_FOUND' };
 
-    if (!result1) throw { statusCode: 404, message: 'EMAIL_NOT_FOUND' };
-    if (!result1.active) throw { statusCode: 401, message: 'USER_NOT_VERIFIED' };
+    // VALIDAR QUE EL EMAIL EXISTA
+    const query2 = 'SELECT * FROM customers WHERE email = $1';
+    const { rows: rows2 } = await client.query(query2, [email]);
+    const result2 = rows2[0];
+    if (!result2) throw { statusCode: 404, message: 'EMAIL_NOT_FOUND' };
+    if (!result2.active) throw { statusCode: 401, message: 'USER_NOT_VERIFIED' };
 
-    const recoverToken = jwt.sign({ sub: result1.id }, config.verifySecret, { expiresIn: '15m' });
+    const recoverToken = jwt.sign({ sub: result2.id }, config.verifySecret, { expiresIn: '15m' });
 
     const domain =
       process.env?.NODE_ENV === 'production'
@@ -169,7 +177,7 @@ const recoverPassword = async ({ email }) => {
       from: config.smtpEmail,
       to: email,
       subject: 'Actualiza tu contraseña',
-      html: `<a href="${domain}/login?recoverPassword=true&token=${recoverToken}">Haz clic aquí</a>`,
+      html: `<a href="${domain}/login/${tableId}?recoverPassword=true&token=${recoverToken}">Haz clic aquí</a>`,
     };
     await sendMail(mail);
 
