@@ -2,47 +2,21 @@ import { pool } from '../libs/pg.js';
 import storageBlob from '../libs/storageBlob.js';
 
 const getAllCategories = async () => {
-  const client = await pool.connect();
+  const query1 = 'SELECT * FROM categories WHERE "isDeleted" = false';
+  const { rows: rows1 } = await pool.query(query1);
+  const result1 = rows1;
+  if (result1.length <= 0) throw { statusCode: 404, message: 'CATEGORIES_NOT_FOUND' };
 
-  try {
-    await client.query('BEGIN');
-
-    const query1 = 'SELECT * FROM categories';
-    const { rows: rows1 } = await client.query(query1);
-    const result1 = rows1;
-    if (result1.length <= 0) throw { statusCode: 404, message: 'CATEGORIES_NOT_FOUND' };
-
-    await client.query('COMMIT');
-
-    return result1;
-  } catch (error) {
-    await client.query('ROLLBACK');
-    throw error;
-  } finally {
-    client.release();
-  }
+  return result1;
 };
 
 const getOneCategory = async ({ categoryId }) => {
-  const client = await pool.connect();
+  const query1 = 'SELECT * FROM categories WHERE id = $1 AND "isDeleted" = false';
+  const { rows: rows1 } = await pool.query(query1, [categoryId]);
+  const result1 = rows1[0];
+  if (!result1) throw { statusCode: 404, message: 'CATEGORY_NOT_FOUND' };
 
-  try {
-    await client.query('BEGIN');
-
-    const query1 = 'SELECT * FROM categories WHERE id = $1';
-    const { rows: rows1 } = await client.query(query1, [categoryId]);
-    const result1 = rows1[0];
-    if (!result1) throw { statusCode: 404, message: 'CATEGORY_NOT_FOUND' };
-
-    await client.query('COMMIT');
-
-    return result1;
-  } catch (error) {
-    await client.query('ROLLBACK');
-    throw error;
-  } finally {
-    client.release();
-  }
+  return result1;
 };
 
 const createNewCategory = async ({ name, description }, file) => {
@@ -117,36 +91,23 @@ const updateOneCategory = async ({ categoryId }, { name, description }, file) =>
 };
 
 const deleteOneCategory = async ({ categoryId }) => {
-  const client = await pool.connect();
+  const query1 = `UPDATE categories SET "isDeleted" = true WHERE id = $1 RETURNING *`;
+  const { rows: rows1 } = await pool.query(query1, [categoryId]);
+  const result1 = rows1[0];
+  if (!result1) throw { statusCode: 404, message: 'CATEGORY_NOT_FOUND' };
 
-  try {
-    await client.query('BEGIN');
-
-    const query1 = `DELETE FROM categories WHERE id = $1 RETURNING *`;
-    const { rows: rows1 } = await client.query(query1, [categoryId]);
-    const result1 = rows1[0];
-    if (!result1) throw { statusCode: 404, message: 'CATEGORY_NOT_FOUND' };
-
-    if (result1.imageUrl) {
-      const blobName = result1.imageUrl.split('/').pop();
-      await storageBlob.deleteBlob('categories', blobName);
-    }
-
-    await client.query('COMMIT');
-
-    return result1;
-  } catch (error) {
-    await client.query('ROLLBACK');
-    throw error;
-  } finally {
-    client.release();
+  if (result1.imageUrl) {
+    const blobName = result1.imageUrl.split('/').pop();
+    await storageBlob.deleteBlob('categories', blobName);
   }
+
+  return result1;
 };
 
 const getAllDishesByCategory = async ({ categoryId }) => {
   const query1 = `SELECT dishes.*, categories.name as "categoryName" FROM dishes 
     JOIN categories ON categories.id = dishes."categoryId" 
-    WHERE "categoryId" = $1`;
+    WHERE dishes."categoryId" = $1 AND dishes."isDeleted" = false AND categories."isDeleted" = false`;
   const { rows: rows1 } = await pool.query(query1, [categoryId]);
   const result1 = rows1;
   if (result1.length <= 0) throw { statusCode: 404, message: 'DISHES_NOT_FOUND' };
