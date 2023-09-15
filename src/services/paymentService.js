@@ -10,7 +10,8 @@ const getAllPayments = async ({ status }) => {
     let query1 = `SELECT payments.*, JSON_AGG (
       JSON_BUILD_OBJECT (
         'id', customers.id,
-        'fullName', customers."fullName"
+        'fullName', customers."fullName",
+        'dni', customers.dni
       )
     ) as customer FROM payments 
     JOIN orders ON payments."orderId" = orders.id JOIN customers ON orders."customerId" = customers.id `;
@@ -46,7 +47,8 @@ const getOnePayment = async ({ paymentId }) => {
     const query1 = `SELECT payments.*, JSON_AGG (
       JSON_BUILD_OBJECT (
         'id', customers.id,
-        'fullName', customers."fullName"
+        'fullName', customers."fullName",
+        'dni', customers.dni
       )
     ) as customer FROM payments 
     JOIN orders ON payments."orderId" = orders.id JOIN customers ON orders."customerId" = customers.id 

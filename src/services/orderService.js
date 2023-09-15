@@ -25,7 +25,8 @@ const getAllOrders = async ({ inDebt }) => {
       ) as dishes_orders,
       JSON_BUILD_OBJECT (
         'id', customers.id,
-        'fullName', customers."fullName"
+        'fullName', customers."fullName",
+        'dni', customers.dni
       ) as customer FROM orders 
       JOIN dishes_orders ON orders.id = dishes_orders."orderId" 
       JOIN dishes ON dishes_orders."dishId" = dishes.id 
@@ -77,7 +78,8 @@ const getOneOrder = async ({ orderId }) => {
       ) as dishes_orders,
       JSON_BUILD_OBJECT (
         'id', customers.id,
-        'fullName', customers."fullName"
+        'fullName', customers."fullName",
+        'dni', customers.dni
       ) as customer FROM orders 
       JOIN dishes_orders ON orders.id = dishes_orders."orderId" 
       JOIN dishes ON dishes_orders."dishId" = dishes.id 
