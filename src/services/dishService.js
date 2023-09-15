@@ -5,10 +5,10 @@ const getAllDishes = async ({ haveCategory }) => {
   try {
     const query1 =
       haveCategory === 'true'
-        ? `SELECT dishes.*, categories.name as "categoryName" FROM dishes LEFT JOIN categories ON dishes."categoryId" = categories.id WHERE dishes."isDeleted" = false AND dishes."categoryId" IS NOT NULL`
+        ? `SELECT dishes.*, categories.name as "categoryName" FROM dishes LEFT JOIN categories ON dishes."categoryId" = categories.id WHERE dishes."isDeleted" = false AND dishes."categoryId" IS NOT NULL ORDER BY dishes.id ASC`
         : haveCategory === 'false'
-        ? `SELECT dishes.*, categories.name as "categoryName" FROM dishes LEFT JOIN categories ON dishes."categoryId" = categories.id WHERE dishes."isDeleted" = false AND dishes."categoryId" IS NULL`
-        : `SELECT dishes.*, categories.name as "categoryName" FROM dishes LEFT JOIN categories ON dishes."categoryId" = categories.id WHERE dishes."isDeleted" = false`;
+        ? `SELECT dishes.*, categories.name as "categoryName" FROM dishes LEFT JOIN categories ON dishes."categoryId" = categories.id WHERE dishes."isDeleted" = false AND dishes."categoryId" IS NULL ORDER BY dishes.id ASC`
+        : `SELECT dishes.*, categories.name as "categoryName" FROM dishes LEFT JOIN categories ON dishes."categoryId" = categories.id WHERE dishes."isDeleted" = false ORDER BY dishes.id ASC`;
     const { rows: rows1 } = await pool.query(query1);
     const result1 = rows1;
     if (result1.length <= 0) throw { statusCode: 404, message: 'DISHES_NOT_FOUND' };

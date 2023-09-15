@@ -6,7 +6,7 @@ const getAllCustomers = async () => {
   try {
     await client.query('BEGIN');
 
-    const query1 = 'SELECT * FROM customers';
+    const query1 = 'SELECT * FROM customers ORDER BY id ASC';
     const { rows: rows1 } = await client.query(query1);
     const result1 = rows1;
     if (result1.length <= 0) throw { statusCode: 404, message: 'CUSTOMERS_NOT_FOUND' };
@@ -80,10 +80,10 @@ const getAllOrdersByCustomer = async ({ inDebt }, { customerId }) => {
       JOIN dishes_orders ON orders.id = dishes_orders."orderId" JOIN dishes ON dishes_orders."dishId" = dishes.id `;
     query1 +=
       inDebt === 'true'
-        ? `WHERE orders."customerId" = $1 AND orders.debt > 0 GROUP BY orders.id`
+        ? `WHERE orders."customerId" = $1 AND orders.debt > 0 GROUP BY orders.id ORDER BY orders.id ASC`
         : inDebt === 'false'
-        ? `WHERE orders."customerId" = $1 AND orders.debt <= 0 GROUP BY orders.id`
-        : `WHERE orders."customerId" = $1 GROUP BY orders.id`;
+        ? `WHERE orders."customerId" = $1 AND orders.debt <= 0 GROUP BY orders.id ORDER BY orders.id ASC`
+        : `WHERE orders."customerId" = $1 GROUP BY orders.id ORDER BY orders.id ASC`;
 
     const { rows: rows1 } = await client.query(query1, [customerId]);
     const result1 = rows1;
@@ -116,12 +116,12 @@ const getAllPaymentsByCustomer = async ({ status }, { customerId }) => {
       JOIN orders ON payments."orderId" = orders.id JOIN customers ON orders."customerId" = customers.id `;
     query1 +=
       status === 'pending'
-        ? `WHERE orders."customerId" = $1 AND payments.status = 'pending' GROUP BY payments.id`
+        ? `WHERE orders."customerId" = $1 AND payments.status = 'pending' GROUP BY payments.id ORDER BY payments.id ASC`
         : status === 'approved'
-        ? `WHERE orders."customerId" = $1 AND payments.status = 'approved' GROUP BY payments.id`
+        ? `WHERE orders."customerId" = $1 AND payments.status = 'approved' GROUP BY payments.id ORDER BY payments.id ASC`
         : status === 'rejected'
-        ? `WHERE orders."customerId" = $1 AND payments.status = 'rejected' GROUP BY payments.id`
-        : `WHERE orders."customerId" = $1 GROUP BY payments.id`;
+        ? `WHERE orders."customerId" = $1 AND payments.status = 'rejected' GROUP BY payments.id ORDER BY payments.id ASC`
+        : `WHERE orders."customerId" = $1 GROUP BY payments.id ORDER BY payments.id ASC`;
 
     const { rows: rows1 } = await client.query(query1, [customerId]);
     const result1 = rows1;

@@ -33,10 +33,10 @@ const getAllOrders = async ({ inDebt }) => {
       JOIN customers ON orders."customerId" = customers.id `;
     query1 +=
       inDebt === 'true'
-        ? `WHERE orders.debt > 0 GROUP BY orders.id, customers.id`
+        ? `WHERE orders.debt > 0 GROUP BY orders.id, customers.id ORDER BY orders.id ASC`
         : inDebt === 'false'
-        ? `WHERE orders.debt <= 0 GROUP BY orders.id, customers.id`
-        : `GROUP BY orders.id, customers.id`;
+        ? `WHERE orders.debt <= 0 GROUP BY orders.id, customers.id ORDER BY orders.id ASC`
+        : `GROUP BY orders.id, customers.id ORDER BY orders.id ASC`;
 
     const { rows: rows1 } = await client.query(query1);
     const result1 = rows1;

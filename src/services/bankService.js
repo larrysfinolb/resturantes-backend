@@ -1,7 +1,7 @@
 import { pool } from '../libs/pg.js';
 
 const getAllBanks = async () => {
-  const query1 = 'SELECT * FROM banks WHERE "isDeleted" = false';
+  const query1 = 'SELECT * FROM banks WHERE "isDeleted" = false ORDER BY id ASC';
   const { rows: rows1 } = await pool.query(query1);
   const result1 = rows1;
   if (result1.length <= 0) throw { statusCode: 404, message: 'BANKS_NOT_FOUND' };

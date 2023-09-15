@@ -2,7 +2,7 @@ import { pool } from '../libs/pg.js';
 import storageBlob from '../libs/storageBlob.js';
 
 const getAllCategories = async () => {
-  const query1 = 'SELECT * FROM categories WHERE "isDeleted" = false';
+  const query1 = 'SELECT * FROM categories WHERE "isDeleted" = false ORDER BY id ASC';
   const { rows: rows1 } = await pool.query(query1);
   const result1 = rows1;
   if (result1.length <= 0) throw { statusCode: 404, message: 'CATEGORIES_NOT_FOUND' };
@@ -125,7 +125,7 @@ const deleteOneCategory = async ({ categoryId }) => {
 const getAllDishesByCategory = async ({ categoryId }) => {
   const query1 = `SELECT dishes.*, categories.name as "categoryName" FROM dishes 
     JOIN categories ON categories.id = dishes."categoryId" 
-    WHERE dishes."categoryId" = $1 AND dishes."isDeleted" = false AND categories."isDeleted" = false`;
+    WHERE dishes."categoryId" = $1 AND dishes."isDeleted" = false AND categories."isDeleted" = false ORDER BY dishes.id ASC`;
   const { rows: rows1 } = await pool.query(query1, [categoryId]);
   const result1 = rows1;
   if (result1.length <= 0) throw { statusCode: 404, message: 'DISHES_NOT_FOUND' };
