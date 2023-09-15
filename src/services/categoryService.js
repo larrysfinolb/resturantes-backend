@@ -144,25 +144,13 @@ const deleteOneCategory = async ({ categoryId }) => {
 };
 
 const getAllDishesByCategory = async ({ categoryId }) => {
-  const client = await pool.connect();
-
-  try {
-    await client.query('BEGIN');
-
-    const query1 = 'SELECT * FROM dishes WHERE "categoryId" = $1';
-    const { rows: rows1 } = await client.query(query1, [categoryId]);
-    const result1 = rows1;
-    if (result1.length <= 0) throw { statusCode: 404, message: 'DISHES_NOT_FOUND' };
-
-    await client.query('COMMIT');
-
-    return result1;
-  } catch (error) {
-    await client.query('ROLLBACK');
-    throw error;
-  } finally {
-    client.release();
-  }
+  const query1 = `SELECT dishes.*, categories.name as "categoryName" FROM dishes 
+    JOIN categories ON categories.id = dishes."categoryId" 
+    WHERE "categoryId" = $1`;
+  const { rows: rows1 } = await pool.query(query1, [categoryId]);
+  const result1 = rows1;
+  if (result1.length <= 0) throw { statusCode: 404, message: 'DISHES_NOT_FOUND' };
+  return result1;
 };
 
 export default {
