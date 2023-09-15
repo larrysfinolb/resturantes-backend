@@ -2,17 +2,22 @@ import { pool } from '../libs/pg.js';
 import storageBlob from '../libs/storageBlob.js';
 
 const getAllDishes = async ({ haveCategory }) => {
-  const query1 =
-    haveCategory === 'true'
-      ? 'SELECT dishes.*, categories.name as "categoryName" FROM dishes LEFT JOIN categories ON dishes."categoryId" = categories.id WHERE "isDeleted" = false AND dishes."categoryId" IS NOT NULL'
-      : haveCategory === 'false'
-      ? 'SELECT dishes.*, categories.name as "categoryName" FROM dishes LEFT JOIN categories ON dishes."categoryId" = categories.id WHERE "isDeleted" = false AND dishes."categoryId" IS NULL'
-      : 'SELECT dishes.*, categories.name as "categoryName" FROM dishes LEFT JOIN categories ON dishes."categoryId" = categories.id WHERE "isDeleted" = false';
-  const { rows: rows1 } = await pool.query(query1);
-  const result1 = rows1;
-  if (result1.length <= 0) throw { statusCode: 404, message: 'DISHES_NOT_FOUND' };
+  try {
+    const query1 =
+      haveCategory === 'true'
+        ? `SELECT dishes.*, categories.name as "categoryName" FROM dishes LEFT JOIN categories ON dishes."categoryId" = categories.id WHERE dishes."isDeleted" = false AND dishes."categoryId" IS NOT NULL`
+        : haveCategory === 'false'
+        ? `SELECT dishes.*, categories.name as "categoryName" FROM dishes LEFT JOIN categories ON dishes."categoryId" = categories.id WHERE dishes."isDeleted" = false AND dishes."categoryId" IS NULL`
+        : `SELECT dishes.*, categories.name as "categoryName" FROM dishes LEFT JOIN categories ON dishes."categoryId" = categories.id WHERE dishes."isDeleted" = false`;
+    const { rows: rows1 } = await pool.query(query1);
+    const result1 = rows1;
+    if (result1.length <= 0) throw { statusCode: 404, message: 'DISHES_NOT_FOUND' };
 
-  return result1;
+    return result1;
+  } catch (error) {
+    console.log(error);
+    throw error;
+  }
 };
 
 const getOneDish = async ({ dishId }) => {
