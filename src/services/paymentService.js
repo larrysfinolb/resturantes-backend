@@ -2,7 +2,7 @@ import { config } from '../config/index.js';
 import { sendMail } from '../libs/nodemailer.js';
 import { pool } from '../libs/pg.js';
 import storageBlob from '../libs/storageBlob.js';
-import { verifiedPayment } from '../utils/templates/verifiedPayment.js';
+import { verifiedPaymentTemplate } from '../utils/templates/verifiedPayment.js';
 
 const getAllPayments = async ({ status }) => {
   const client = await pool.connect();
@@ -141,7 +141,7 @@ const updateOnePayment = async ({ paymentId }, { status }) => {
       from: config.smtpEmail,
       to: result0.customerEmail,
       subject: 'Tu pago a sido comprobado',
-      html: verifiedPayment(result1.status),
+      html: verifiedPaymentTemplate(result1.status),
     };
     await sendMail(mail);
 

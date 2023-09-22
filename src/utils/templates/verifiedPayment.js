@@ -1,5 +1,9 @@
-export const verifiedPayment = (status) => {
-  const message = status === 'approved' ? 'PAGO APROBADO' : 'PAGO RECHAZADO';
+export const verifiedPaymentTemplate = (status) => {
+  const title = status === 'approved' ? 'PAGO APROBADO' : 'PAGO RECHAZADO';
+  const message =
+    status === 'approved'
+      ? '¡Tu pago a sido aprobado! Muchas gracias por confiar en nosotros.'
+      : '¡Tu pago a sido rechazado! Por favor, verifica e intenta nuevamente.';
 
   return `
   <!DOCTYPE html>
@@ -110,7 +114,7 @@ export const verifiedPayment = (status) => {
                             <table class="heading_block block-2" width="100%" border="0" cellpadding="10" cellspacing="0" role="presentation">
                               <tr>
                                 <td class="pad">
-                                  <h1 style="margin: 0; color: #fd7e14; direction: ltr; font-family: Arial, Helvetica, sans-serif; font-size: 38px; font-weight: 700; letter-spacing: normal; line-height: 120%; text-align: center; margin-top: 0; margin-bottom: 0;"><span class="tinyMce-placeholder">${message}</span></h1>
+                                  <h1 style="margin: 0; color: #fd7e14; direction: ltr; font-family: Arial, Helvetica, sans-serif; font-size: 38px; font-weight: 700; letter-spacing: normal; line-height: 120%; text-align: center; margin-top: 0; margin-bottom: 0;"><span class="tinyMce-placeholder">${title}</span></h1>
                                 </td>
                               </tr>
                             </table>
@@ -118,7 +122,7 @@ export const verifiedPayment = (status) => {
                               <tr>
                                 <td class="pad">
                                   <div style="color:#101112;direction:ltr;font-family:Arial, Helvetica, sans-serif;font-size:16px;font-weight:400;letter-spacing:0px;line-height:120%;text-align:justify;">
-                                    <p style="margin: 0;">Tu pago a sido aprobado. ¡Muchas gracias por confiar en nosotros!&nbsp;</p>
+                                    <p style="margin: 0;">${message}</p>
                                   </div>
                                 </td>
                               </tr>

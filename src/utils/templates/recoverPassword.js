@@ -1,4 +1,4 @@
-export const recoverPassword = (link) => `
+export const recoverPasswordTemplate = (link) => `
 <!DOCTYPE html>
 <html xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office" lang="es-ES">
 
@@ -100,7 +100,7 @@ export const recoverPassword = (link) => `
 													<table class="image_block block-1" width="100%" border="0" cellpadding="0" cellspacing="0" role="presentation" >
 														<tr>
 															<td class="pad" style="width:100%;">
-																<div class="alignment" align="center" style="line-height:10px"><img src="https://resturatesstorage.blob.core.windows.net/others/email.jpeg" style="display: block; height: auto; border: 0; max-width: 600px; width: 100%;" width="600"></div>
+																<div class="alignment" align="center" style="line-height:10px"><img src="https://resturatesstorage.blob.core.windows.net/others/lock.jpeg" style="display: block; height: auto; border: 0; max-width: 600px; width: 100%;" width="600"></div>
 															</td>
 														</tr>
 													</table>
@@ -121,22 +121,47 @@ export const recoverPassword = (link) => `
 														</tr>
 													</table>
 													<table class="button_block block-4" width="100%" border="0" cellpadding="10" cellspacing="0" role="presentation" >
-														<tr>
-															<td class="pad">
-                                <a href="${link}" target="_blank" 
-                                style="
-                                  color: #ffffff;
-                                  padding-left: 20px;
-                                  padding-right: 20px;
-                                  font-size: 16px;
-                                  display: inline-block;
-                                  letter-spacing: normal;
-                                "
-                                ><span style="word-break: break-word; line-height: 32px #ffffff;"
-                                  >CAMBIA TU CONTRASEÑA</span
-                                ></a
-															</td>
-														</tr>
+													<tr>
+													<td class="pad">
+														<div align="center" class="alignment">
+															<div
+																style="
+																	text-decoration: none;
+																	display: inline-block;
+																	color: #ffffff;
+																	background-color: #fd7e14;
+																	border-radius: 4px;
+																	width: auto;
+																	border-top: 0px solid transparent;
+																	font-weight: 700;
+																	border-right: 0px solid transparent;
+																	border-bottom: 0px solid transparent;
+																	border-left: 0px solid transparent;
+																	padding-top: 5px;
+																	padding-bottom: 5px;
+																	font-family: Arial, Helvetica, sans-serif;
+																	font-size: 16px;
+																	text-align: center;
+																	word-break: keep-all;
+																"
+															>
+																<a href="${link}" target="_blank" 
+																	style="
+																		color: #ffffff;
+																		padding-left: 20px;
+																		padding-right: 20px;
+																		font-size: 16px;
+																		display: inline-block;
+																		letter-spacing: normal;
+																	"
+																	><span style="word-break: break-word; line-height: 32px #ffffff;"
+																		>CAMBIA TU CONTRASEÑA</span
+																	></a
+																>
+															</div>
+														</div>
+													</td>
+												</tr>
 													</table>
 												</td>
 											</tr>

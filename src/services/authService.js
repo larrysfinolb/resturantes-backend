@@ -4,6 +4,7 @@ import { pool } from '../libs/pg.js';
 import { config } from '../config/index.js';
 import { sendMail } from '../libs/nodemailer.js';
 import { signupTemplate } from '../utils/templates/signup.js';
+import { recoverPasswordTemplate } from '../utils/templates/recoverPassword.js';
 
 const signup = async ({ fullName, email, dni, phone, password, tableId }) => {
   const client = await pool.connect();
@@ -178,7 +179,7 @@ const recoverPassword = async ({ email, tableId }) => {
       from: config.smtpEmail,
       to: email,
       subject: 'Actualiza tu contraseña',
-      html: recoverPassword(`${domain}/login/${tableId}?recoverPassword=true&token=${recoverToken}`),
+      html: recoverPasswordTemplate(`${domain}/login/${tableId}?recoverPassword=true&token=${recoverToken}`),
     };
     await sendMail(mail);
 
