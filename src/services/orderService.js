@@ -25,17 +25,18 @@ const getAllOrders = async ({ inDebt }) => {
       ) as dishes_orders,
       JSON_BUILD_OBJECT (
         'id', customers.id,
-        'fullName', customers."fullName"
+        'fullName', customers."fullName",
+        'dni', customers.dni
       ) as customer FROM orders 
       JOIN dishes_orders ON orders.id = dishes_orders."orderId" 
       JOIN dishes ON dishes_orders."dishId" = dishes.id 
       JOIN customers ON orders."customerId" = customers.id `;
     query1 +=
       inDebt === 'true'
-        ? `WHERE orders.debt > 0 GROUP BY orders.id, customers.id`
+        ? `WHERE orders.debt > 0 GROUP BY orders.id, customers.id ORDER BY orders.id ASC`
         : inDebt === 'false'
-        ? `WHERE orders.debt <= 0 GROUP BY orders.id, customers.id`
-        : `GROUP BY orders.id, customers.id`;
+        ? `WHERE orders.debt <= 0 GROUP BY orders.id, customers.id ORDER BY orders.id ASC`
+        : `GROUP BY orders.id, customers.id ORDER BY orders.id ASC`;
 
     const { rows: rows1 } = await client.query(query1);
     const result1 = rows1;
@@ -77,7 +78,8 @@ const getOneOrder = async ({ orderId }) => {
       ) as dishes_orders,
       JSON_BUILD_OBJECT (
         'id', customers.id,
-        'fullName', customers."fullName"
+        'fullName', customers."fullName",
+        'dni', customers.dni
       ) as customer FROM orders 
       JOIN dishes_orders ON orders.id = dishes_orders."orderId" 
       JOIN dishes ON dishes_orders."dishId" = dishes.id 

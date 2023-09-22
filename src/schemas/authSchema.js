@@ -23,6 +23,7 @@ const login = Joi.object({
 
 const recoverPassword = Joi.object({
   email: email.required(),
+  tableId: tableId.required(),
 });
 
 const changePassword = Joi.object({

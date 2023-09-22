@@ -6,7 +6,7 @@ const getAllTables = async () => {
   try {
     await client.query('BEGIN');
 
-    const query1 = 'SELECT * FROM tables';
+    const query1 = 'SELECT * FROM tables ORDER BY id ASC';
     const { rows: rows1 } = await client.query(query1);
     const result1 = rows1;
     if (result1.length <= 0) throw { statusCode: 404, message: 'TABLES_NOT_FOUND' };

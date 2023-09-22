@@ -13,17 +13,18 @@ const getAllPayments = async ({ status }) => {
     let query1 = `SELECT payments.*, JSON_AGG (
       JSON_BUILD_OBJECT (
         'id', customers.id,
-        'fullName', customers."fullName"
+        'fullName', customers."fullName",
+        'dni', customers.dni
       )
     ) as customer FROM payments 
     JOIN orders ON payments."orderId" = orders.id JOIN customers ON orders."customerId" = customers.id `;
     query1 +=
       status === 'pending'
-        ? `WHERE status = 'pending' GROUP BY payments.id`
+        ? `WHERE status = 'pending' GROUP BY payments.id ORDER BY payments.id ASC`
         : status === 'approved'
-        ? `WHERE status = 'approved' GROUP BY payments.id`
+        ? `WHERE status = 'approved' GROUP BY payments.id ORDER BY payments.id ASC`
         : status === 'rejected'
-        ? `WHERE status = 'rejected' GROUP BY payments.id`
+        ? `WHERE status = 'rejected' GROUP BY payments.id ORDER BY payments.id ASC`
         : 'GROUP BY payments.id';
     const { rows: rows1 } = await client.query(query1);
     const result1 = rows1;
@@ -49,7 +50,8 @@ const getOnePayment = async ({ paymentId }) => {
     const query1 = `SELECT payments.*, JSON_AGG (
       JSON_BUILD_OBJECT (
         'id', customers.id,
-        'fullName', customers."fullName"
+        'fullName', customers."fullName",
+        'dni', customers.dni
       )
     ) as customer FROM payments 
     JOIN orders ON payments."orderId" = orders.id JOIN customers ON orders."customerId" = customers.id 
