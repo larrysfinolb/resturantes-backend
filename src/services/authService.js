@@ -3,6 +3,7 @@ import bcrypt from 'bcrypt';
 import { pool } from '../libs/pg.js';
 import { config } from '../config/index.js';
 import { sendMail } from '../libs/nodemailer.js';
+import { signupTemplate } from '../utils/templates/signup.js';
 
 const signup = async ({ fullName, email, dni, phone, password, tableId }) => {
   const client = await pool.connect();
@@ -61,8 +62,8 @@ const signup = async ({ fullName, email, dni, phone, password, tableId }) => {
     const mail = {
       from: config.smtpEmail,
       to: email,
-      subject: 'Verifica tu cuenta',
-      html: `<a href="${domain}/login/${tableId}?token=${verifyToken}">Haz clic aquí</a>`,
+      subject: 'Verifica tu cuenta de Resturantes',
+      html: signupTemplate(`${domain}/login/${tableId}?token=${verifyToken}`),
     };
     await sendMail(mail);
 
@@ -140,7 +141,6 @@ const login = async ({ email, password }) => {
 };
 
 const refreshToken = async ({ sub }) => {
-  console.log(sub);
   const accessToken = jwt.sign({ sub, role: 'customer' }, config.accessSecret, { expiresIn: '15m' });
   const refreshToken = jwt.sign({ sub, role: 'customer' }, config.refreshSecret, { expiresIn: '7d' });
   return { accessToken, refreshToken };
@@ -169,7 +169,7 @@ const recoverPassword = async ({ email }) => {
       from: config.smtpEmail,
       to: email,
       subject: 'Actualiza tu contraseña',
-      html: `<a href="${domain}/login?recoverPassword=true&token=${recoverToken}">Haz clic aquí</a>`,
+      html: recoverPassword(`${domain}/login?recoverPassword=true&token=${recoverToken}`),
     };
     await sendMail(mail);
 

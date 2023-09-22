@@ -1,5 +1,8 @@
+import { config } from '../config/index.js';
+import { sendMail } from '../libs/nodemailer.js';
 import { pool } from '../libs/pg.js';
 import storageBlob from '../libs/storageBlob.js';
+import { verifiedPayment } from '../utils/templates/verifiedPayment.js';
 
 const getAllPayments = async ({ status }) => {
   const client = await pool.connect();
@@ -105,7 +108,10 @@ const updateOnePayment = async ({ paymentId }, { status }) => {
   try {
     await client.query('BEGIN');
 
-    const query0 = 'SELECT * FROM payments WHERE id = $1';
+    const query0 = `SELECT payments.*, customers.email as "customerEmail" 
+    FROM payments 
+    JOIN orders ON payments."orderId" = orders.id JOIN customers ON orders."customerId" = customers.id
+    WHERE payments.id = $1 GROUP BY payments.id, customers.email`;
     const { rows: rows0 } = await client.query(query0, [paymentId]);
     const result0 = rows0[0];
     if (!result0) throw { statusCode: 404, message: 'PAYMENT_NOT_FOUND' };
@@ -128,6 +134,14 @@ const updateOnePayment = async ({ paymentId }, { status }) => {
       const result3 = rows3[0];
       if (!result3) throw { statusCode: 500, message: 'ORDER_NOT_UPDATED' };
     }
+
+    const mail = {
+      from: config.smtpEmail,
+      to: result0.customerEmail,
+      subject: 'Tu pago a sido comprobado',
+      html: verifiedPayment(result1.status),
+    };
+    await sendMail(mail);
 
     await client.query('COMMIT');
 
