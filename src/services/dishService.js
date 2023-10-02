@@ -1,7 +1,7 @@
 import { pool } from '../libs/pg.js';
 import storageBlob from '../libs/storageBlob.js';
 
-const getAllDishes = async ({ haveCategory }) => {
+const getAllDishes = async ({ haveCategory, active }) => {
   try {
     const query1 =
       haveCategory === 'true'
@@ -10,7 +10,10 @@ const getAllDishes = async ({ haveCategory }) => {
         ? `SELECT dishes.*, categories.name as "categoryName" FROM dishes LEFT JOIN categories ON dishes."categoryId" = categories.id WHERE dishes."isDeleted" = false AND dishes."categoryId" IS NULL ORDER BY dishes.id ASC`
         : `SELECT dishes.*, categories.name as "categoryName" FROM dishes LEFT JOIN categories ON dishes."categoryId" = categories.id WHERE dishes."isDeleted" = false ORDER BY dishes.id ASC`;
     const { rows: rows1 } = await pool.query(query1);
-    const result1 = rows1;
+    let result1 = rows1;
+    if (active === 'true') result1 = result1.filter((dish) => dish.active === true);
+    else if (active === 'false') result1 = result1.filter((dish) => dish.active === false);
+
     if (result1.length <= 0) throw { statusCode: 404, message: 'DISHES_NOT_FOUND' };
 
     return result1;
@@ -29,14 +32,14 @@ const getOneDish = async ({ dishId }) => {
   return result1;
 };
 
-const createNewDish = async ({ name, price, categoryId }, file) => {
+const createNewDish = async ({ name, price, description, categoryId }, file) => {
   const client = await pool.connect();
 
   try {
     await client.query('BEGIN');
 
-    const query1 = `INSERT INTO dishes (name, price, "categoryId") VALUES ($1, $2, $3) RETURNING *`;
-    const { rows: rows1 } = await client.query(query1, [name, price, categoryId]);
+    const query1 = `INSERT INTO dishes (name, price, description, "categoryId") VALUES ($1, $2, $3, $4) RETURNING *`;
+    const { rows: rows1 } = await client.query(query1, [name, price, description, categoryId]);
     const result1 = rows1[0];
     if (!result1) throw { statusCode: 500, message: 'DISH_NOT_CREATED' };
 
@@ -62,15 +65,15 @@ const createNewDish = async ({ name, price, categoryId }, file) => {
   }
 };
 
-const updateOneDish = async ({ dishId }, { name, price, categoryId }, file) => {
+const updateOneDish = async ({ dishId }, { name, price, description, categoryId, active }, file) => {
   const client = await pool.connect();
 
   try {
     await client.query('BEGIN');
 
-    const query1 =
-      'UPDATE dishes SET name = COALESCE($1, name), price = COALESCE($2, price), "categoryId" = COALESCE($3, "categoryId") WHERE id = $4 RETURNING *';
-    const { rows: rows1 } = await client.query(query1, [name, price, categoryId, dishId]);
+    const query1 = `UPDATE dishes SET name = COALESCE($1, name), price = COALESCE($2, price), description = COALESCE($3, description),
+    "categoryId" = COALESCE($4, "categoryId"), active = COALESCE($5, active) WHERE id = $6 RETURNING *`;
+    const { rows: rows1 } = await client.query(query1, [name, price, description, categoryId, active, dishId]);
     const result1 = rows1[0];
     if (!result1) throw { statusCode: 404, message: 'DISH_NOT_FOUND' };
 

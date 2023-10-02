@@ -4,6 +4,7 @@ const id = Joi.string().regex(/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-
 const name = Joi.string().regex(/^[\w\s\-_,.()À-ÿ]{1,50}$/);
 const description = Joi.string().regex(/^[\w\s\-_,.()À-ÿ]{1,255}$/);
 const price = Joi.number().min(0).max(9999.99);
+const active = Joi.boolean();
 
 const schemaParams = Joi.object({
   dishId: id.required(),
@@ -21,6 +22,7 @@ const schemaBodyUpdate = Joi.object({
   name,
   description,
   price,
+  active,
 });
 
 export default { schemaParams, schemaBodyCreate, schemaBodyUpdate };
