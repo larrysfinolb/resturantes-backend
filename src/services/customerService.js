@@ -59,7 +59,7 @@ const getAllOrdersByCustomer = async ({ inDebt }, { customerId }) => {
 
     await client.query('BEGIN');
 
-    let query1 = `SELECT orders.id, orders."customerId", orders."tableId", orders.total, orders.debt, orders."createdAt",
+    let query1 = `SELECT orders.*,
       JSON_AGG (
         JSON_BUILD_OBJECT (
           'id', dishes_orders.id,
@@ -69,6 +69,7 @@ const getAllOrdersByCustomer = async ({ inDebt }, { customerId }) => {
           'createdAt', dishes_orders."createdAt",
           'dish', JSON_BUILD_OBJECT (
             'id', dishes.id,
+            'code', dishes.code,
             'name', dishes.name,
             'price', dishes.price,
             'imageUrl', dishes."imageUrl",
@@ -106,8 +107,7 @@ const getAllPaymentsByCustomer = async ({ status }, { customerId }) => {
   try {
     await client.query('BEGIN');
 
-    let query1 = `SELECT payments.id, payments."orderId", payments."voucherUrl", payments.reference, payments.dni, 
-      payments.status, payments."bankId", payments.type, payments.amount, payments."createdAt", JSON_AGG (
+    let query1 = `SELECT payments.*, JSON_AGG (
         JSON_BUILD_OBJECT (
           'id', customers.id,
           'fullName', customers."fullName"
