@@ -19,14 +19,14 @@ const getOneCategory = async ({ categoryId }) => {
   return result1;
 };
 
-const createNewCategory = async ({ name, description }, file) => {
+const createNewCategory = async ({ name }, file) => {
   const client = await pool.connect();
 
   try {
     await client.query('BEGIN');
 
-    const query1 = `INSERT INTO categories (name, description) VALUES ($1, $2) RETURNING *`;
-    const { rows: rows1 } = await client.query(query1, [name, description]);
+    const query1 = `INSERT INTO categories (name) VALUES ($1, $2) RETURNING *`;
+    const { rows: rows1 } = await client.query(query1, [name]);
     const result1 = rows1[0];
     if (!result1) throw { statusCode: 500, message: 'CATEGORY_NOT_CREATED' };
 
@@ -52,14 +52,14 @@ const createNewCategory = async ({ name, description }, file) => {
   }
 };
 
-const updateOneCategory = async ({ categoryId }, { name, description }, file) => {
+const updateOneCategory = async ({ categoryId }, { name }, file) => {
   const client = await pool.connect();
 
   try {
     await client.query('BEGIN');
 
-    const query1 = `UPDATE categories SET name = COALESCE($1, name), description = COALESCE($2, description) WHERE id = $3 RETURNING *`;
-    const { rows: rows1 } = await client.query(query1, [name, description, categoryId]);
+    const query1 = `UPDATE categories SET name = COALESCE($1, name) WHERE id = $3 RETURNING *`;
+    const { rows: rows1 } = await client.query(query1, [name, categoryId]);
     const result1 = rows1[0];
     if (!result1) throw { statusCode: 404, message: 'CATEGORY_NOT_FOUND' };
 
