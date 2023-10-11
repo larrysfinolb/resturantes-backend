@@ -25,7 +25,7 @@ const createNewCategory = async ({ name }, file) => {
   try {
     await client.query('BEGIN');
 
-    const query1 = `INSERT INTO categories (name) VALUES ($1, $2) RETURNING *`;
+    const query1 = `INSERT INTO categories (name) VALUES ($1) RETURNING *`;
     const { rows: rows1 } = await client.query(query1, [name]);
     const result1 = rows1[0];
     if (!result1) throw { statusCode: 500, message: 'CATEGORY_NOT_CREATED' };
@@ -58,7 +58,7 @@ const updateOneCategory = async ({ categoryId }, { name }, file) => {
   try {
     await client.query('BEGIN');
 
-    const query1 = `UPDATE categories SET name = COALESCE($1, name) WHERE id = $3 RETURNING *`;
+    const query1 = `UPDATE categories SET name = COALESCE($1, name) WHERE id = $2 RETURNING *`;
     const { rows: rows1 } = await client.query(query1, [name, categoryId]);
     const result1 = rows1[0];
     if (!result1) throw { statusCode: 404, message: 'CATEGORY_NOT_FOUND' };
