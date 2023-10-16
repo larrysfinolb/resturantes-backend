@@ -70,7 +70,7 @@ const getOneOrder = async ({ orderId }) => {
           'dish', JSON_BUILD_OBJECT (
             'id', dishes.id,
             'name', dishes.name,
-            'code', disehs.code,
+            'code', dishes.code,
             'price', dishes.price,
             'imageUrl', dishes."imageUrl",
             'categoryId', dishes."categoryId",
