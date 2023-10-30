@@ -18,20 +18,25 @@ const getOneBank = async ({ bankId }) => {
   return result1;
 };
 
-const createNewBank = async ({ name }) => {
+const createNewBank = async ({ name, number, dni }) => {
   const client = await pool.connect();
 
   try {
     await client.query('BEGIN');
 
-    const query1 = `INSERT INTO banks (name) VALUES ($1) RETURNING *`;
-    const { rows: rows1 } = await client.query(query1, [name]);
+    const query1 = `SELECT * FROM banks WHERE number = $1 AND "isDeleted" = false`;
+    const { rows: rows1 } = await client.query(query1, [number]);
     const result1 = rows1[0];
-    if (!result1) throw { statusCode: 500, message: 'BANK_NOT_CREATED' };
+    if (result1) throw { statusCode: 400, message: 'BANK_ALREADY_EXISTS' };
+
+    const query2 = `INSERT INTO banks (name, number, dni) VALUES ($1, $2, $3) RETURNING *`;
+    const { rows: rows2 } = await client.query(query2, [name, number, dni]);
+    const result2 = rows2[0];
+    if (!result2) throw { statusCode: 500, message: 'BANK_NOT_CREATED' };
 
     await client.query('COMMIT');
 
-    return result1;
+    return result2;
   } catch (error) {
     await client.query('ROLLBACK');
     throw error;
@@ -40,20 +45,25 @@ const createNewBank = async ({ name }) => {
   }
 };
 
-const updateOneBank = async ({ bankId }, { name }) => {
+const updateOneBank = async ({ bankId }, { name, number, dni }) => {
   const client = await pool.connect();
 
   try {
     await client.query('BEGIN');
 
-    const query1 = `UPDATE banks SET name = COALESCE($1, name) WHERE id = $2 RETURNING *`;
-    const { rows: rows1 } = await client.query(query1, [name, bankId]);
+    const query1 = `SELECT * FROM banks WHERE number = $1 AND "isDeleted" = false`;
+    const { rows: rows1 } = await client.query(query1, [number]);
     const result1 = rows1[0];
-    if (!result1) throw { statusCode: 500, message: 'BANK_NOT_UPDATED' };
+    if (result1) throw { statusCode: 400, message: 'BANK_ALREADY_EXISTS' };
+
+    const query2 = `UPDATE banks SET name = COALESCE($1, name), number = COALESCE($2, number), dni = COALESCE($3, dni) WHERE id = $4 RETURNING *`;
+    const { rows: rows2 } = await client.query(query2, [name, number, dni, bankId]);
+    const result2 = rows2[0];
+    if (!result2) throw { statusCode: 500, message: 'BANK_NOT_UPDATED' };
 
     await client.query('COMMIT');
 
-    return result1;
+    return result2;
   } catch (error) {
     await client.query('ROLLBACK');
     throw error;
