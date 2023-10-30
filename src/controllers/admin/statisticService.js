@@ -1,8 +1,10 @@
 import statisticService from '../../services/admin/statisticService.js';
 
 const getAll = async (req, res, next) => {
+  const { query } = req;
+
   statisticService
-    .getAll()
+    .getAll(query)
     .then((data) => {
       res.status(200).json({ message: 'STATISTIC_FOUND', data });
     })

@@ -1,11 +1,14 @@
 import { pool } from '../../libs/pg.js';
 
-const getAll = async () => {
+const getAll = async ({ year }) => {
   const client = await pool.connect();
 
   try {
     await client.query('BEGIN');
 
+    year = year ?? new Date().getFullYear();
+
+    console.log(year);
     const query1 = `SELECT * FROM orders`;
     const { rows: rows1 } = await client.query(query1);
     const result1 = rows1;
@@ -17,6 +20,7 @@ const getAll = async () => {
       'Abril',
       'Mayo',
       'Junio',
+      'Julio',
       'Agosto',
       'Septiembre',
       'Octubre',
@@ -26,12 +30,17 @@ const getAll = async () => {
 
     const numberOrders = {
       labels: MONTHS,
-      data: MONTHS.map((_, i) => result1.filter((order) => order.createdAt.getMonth() === i).length),
+      data: MONTHS.map(
+        (_, i) =>
+          result1.filter((order) => order.createdAt.getMonth() === i && order.createdAt.getFullYear() === year).length
+      ),
     };
     const totalOrders = {
       labels: MONTHS,
       data: MONTHS.map((_, i) =>
-        result1.filter((order) => order.createdAt.getMonth() === i).reduce((acc, curr) => acc + curr.total, 0)
+        result1
+          .filter((order) => order.createdAt.getMonth() === i && order.createdAt.getFullYear() === year)
+          .reduce((acc, curr) => acc + curr.total, 0)
       ),
     };
 
@@ -40,7 +49,10 @@ const getAll = async () => {
 
     const frequentTables = {
       labels: result2.map((table) => table.description),
-      data: result2.map((table) => result1.filter((order) => order.tableId === table.id).length),
+      data: result2.map(
+        (table) =>
+          result1.filter((order) => order.tableId === table.id && order.createdAt.getFullYear() === year).length
+      ),
     };
 
     const query3 = `SELECT dishes_orders.*, dishes.name AS "dishName" FROM dishes_orders 
@@ -49,7 +61,11 @@ const getAll = async () => {
 
     const popularDishes = {
       labels: result3.map((dish) => dish.dishName),
-      data: result3.map((dish) => result1.filter((order) => order.id === dish.orderId).length * dish.quantity),
+      data: result3.map(
+        (dish) =>
+          result1.filter((order) => order.id === dish.orderId && order.createdAt.getFullYear() === year).length *
+          dish.quantity
+      ),
     };
     popularDishes.data.sort((a, b) => b - a);
     popularDishes.labels.sort(
