@@ -6,7 +6,7 @@ const getAllOrders = async ({ inDebt }) => {
   try {
     await client.query('BEGIN');
 
-    let query1 = `SELECT orders.*,
+    let query1 = `SELECT orders.*, tables.description as "tableDescription",
       JSON_AGG (
         JSON_BUILD_OBJECT (
           'id', dishes_orders.id,
@@ -31,13 +31,14 @@ const getAllOrders = async ({ inDebt }) => {
       ) as customer FROM orders 
       JOIN dishes_orders ON orders.id = dishes_orders."orderId" 
       JOIN dishes ON dishes_orders."dishId" = dishes.id 
-      JOIN customers ON orders."customerId" = customers.id `;
+      JOIN customers ON orders."customerId" = customers.id 
+      JOIN tables ON orders."tableId" = tables.id `;
     query1 +=
       inDebt === 'true'
-        ? `WHERE orders.debt > 0 GROUP BY orders.id, customers.id ORDER BY orders.id ASC`
+        ? `WHERE orders.debt > 0 GROUP BY orders.id, customers.id, tables.description ORDER BY orders.id ASC`
         : inDebt === 'false'
-        ? `WHERE orders.debt <= 0 GROUP BY orders.id, customers.id ORDER BY orders.id ASC`
-        : `GROUP BY orders.id, customers.id ORDER BY orders.id ASC`;
+        ? `WHERE orders.debt <= 0 GROUP BY orders.id, customers.id, tables.description ORDER BY orders.id ASC`
+        : `GROUP BY orders.id, customers.id, tables.description ORDER BY orders.id ASC`;
 
     const { rows: rows1 } = await client.query(query1);
     const result1 = rows1;
@@ -60,7 +61,7 @@ const getOneOrder = async ({ orderId }) => {
   try {
     await client.query('BEGIN');
 
-    const query1 = `SELECT orders.*,
+    const query1 = `SELECT orders.*, tables.description as "tableDescription",
       JSON_AGG (
         JSON_BUILD_OBJECT (
           'id', dishes_orders.id,
@@ -86,7 +87,8 @@ const getOneOrder = async ({ orderId }) => {
       JOIN dishes_orders ON orders.id = dishes_orders."orderId" 
       JOIN dishes ON dishes_orders."dishId" = dishes.id 
       JOIN customers ON orders."customerId" = customers.id
-      WHERE orders.id = $1 GROUP BY orders.id, customers.id`;
+      JOIN tables ON orders."tableId" = tables.id
+      WHERE orders.id = $1 GROUP BY orders.id, customers.id, tables.description`;
     const { rows: rows1 } = await client.query(query1, [orderId]);
     const result1 = rows1[0];
     if (!result1) throw { statusCode: 404, message: 'ORDER_NOT_FOUND' };

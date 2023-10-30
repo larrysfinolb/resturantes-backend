@@ -59,7 +59,7 @@ const getAllOrdersByCustomer = async ({ inDebt }, { customerId }) => {
 
     await client.query('BEGIN');
 
-    let query1 = `SELECT orders.*,
+    let query1 = `SELECT orders.*, tables.description as "tableDescription",
       JSON_AGG (
         JSON_BUILD_OBJECT (
           'id', dishes_orders.id,
@@ -78,13 +78,15 @@ const getAllOrdersByCustomer = async ({ inDebt }, { customerId }) => {
           )
         )
       ) as dishes_orders FROM orders
-      JOIN dishes_orders ON orders.id = dishes_orders."orderId" JOIN dishes ON dishes_orders."dishId" = dishes.id `;
+      JOIN dishes_orders ON orders.id = dishes_orders."orderId" 
+      JOIN dishes ON dishes_orders."dishId" = dishes.id 
+      JOIN tables ON orders."tableId" = tables.id `;
     query1 +=
       inDebt === 'true'
-        ? `WHERE orders."customerId" = $1 AND orders.debt > 0 GROUP BY orders.id ORDER BY orders.id ASC`
+        ? `WHERE orders."customerId" = $1 AND orders.debt > 0 GROUP BY orders.id, tables.description ORDER BY orders.id ASC`
         : inDebt === 'false'
-        ? `WHERE orders."customerId" = $1 AND orders.debt <= 0 GROUP BY orders.id ORDER BY orders.id ASC`
-        : `WHERE orders."customerId" = $1 GROUP BY orders.id ORDER BY orders.id ASC`;
+        ? `WHERE orders."customerId" = $1 AND orders.debt <= 0 GROUP BY orders.id, tables.description ORDER BY orders.id ASC`
+        : `WHERE orders."customerId" = $1 GROUP BY orders.id, tables.description ORDER BY orders.id ASC`;
 
     const { rows: rows1 } = await client.query(query1, [customerId]);
     const result1 = rows1;
