@@ -20,11 +20,20 @@ const getOneOrder = (req, res, next) => {
 
 const createNewOrder = (req, res, next) => {
   const { body, user } = req;
-  console.log(user);
+
   orderService
     .createNewOrder({ customerId: user.sub }, body)
     .then((data) => res.status(201).json({ message: 'ORDER_CREATED', data }))
     .catch((err) => next(err));
 };
 
-export default { getAllOrders, getOneOrder, createNewOrder };
+const updateStatusOrder = (req, res, next) => {
+  const { body, params } = req;
+
+  orderService
+    .updateStatusOrder(params, body)
+    .then((data) => res.status(200).json({ message: 'ORDER_UPDATED', data }))
+    .catch((err) => next(err));
+};
+
+export default { getAllOrders, getOneOrder, createNewOrder, updateStatusOrder };

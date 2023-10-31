@@ -24,4 +24,13 @@ ordersRouter.post(
   orderController.createNewOrder
 );
 
+ordersRouter.patch(
+  '/:orderId',
+  authJwtHandler(config.accessSecret),
+  authRoleHandler('admin'),
+  schemaHandler(orderSchema.schemaParams, 'params'),
+  schemaHandler(orderSchema.schemaBodyUpdateStatus, 'body'),
+  orderController.updateStatusOrder
+);
+
 export default ordersRouter;

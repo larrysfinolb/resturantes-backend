@@ -8,7 +8,6 @@ const getAll = async ({ year }) => {
 
     year = year ?? new Date().getFullYear();
 
-    console.log(year);
     const query1 = `SELECT * FROM orders`;
     const { rows: rows1 } = await client.query(query1);
     const result1 = rows1;
@@ -32,14 +31,20 @@ const getAll = async ({ year }) => {
       labels: MONTHS,
       data: MONTHS.map(
         (_, i) =>
-          result1.filter((order) => order.createdAt.getMonth() === i && order.createdAt.getFullYear() === year).length
+          result1.filter(
+            (order) =>
+              order.createdAt.getMonth() === i && order.createdAt.getFullYear() === year && order.status === 'delivered'
+          ).length
       ),
     };
     const totalOrders = {
       labels: MONTHS,
       data: MONTHS.map((_, i) =>
         result1
-          .filter((order) => order.createdAt.getMonth() === i && order.createdAt.getFullYear() === year)
+          .filter(
+            (order) =>
+              order.createdAt.getMonth() === i && order.createdAt.getFullYear() === year && order.status === 'delivered'
+          )
           .reduce((acc, curr) => acc + curr.total, 0)
       ),
     };
@@ -51,7 +56,10 @@ const getAll = async ({ year }) => {
       labels: result2.map((table) => table.description),
       data: result2.map(
         (table) =>
-          result1.filter((order) => order.tableId === table.id && order.createdAt.getFullYear() === year).length
+          result1.filter(
+            (order) =>
+              order.tableId === table.id && order.createdAt.getFullYear() === year && order.status === 'delivered'
+          ).length
       ),
     };
 
@@ -63,8 +71,10 @@ const getAll = async ({ year }) => {
       labels: result3.map((dish) => dish.dishName),
       data: result3.map(
         (dish) =>
-          result1.filter((order) => order.id === dish.orderId && order.createdAt.getFullYear() === year).length *
-          dish.quantity
+          result1.filter(
+            (order) =>
+              order.id === dish.orderId && order.createdAt.getFullYear() === year && order.status === 'delivered'
+          ).length * dish.quantity
       ),
     };
     popularDishes.data.sort((a, b) => b - a);

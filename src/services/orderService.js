@@ -109,6 +109,7 @@ const createNewOrder = async ({ customerId }, { tableId, dishes }) => {
 
   try {
     await pool.query('BEGIN');
+
     const totals = await Promise.all(
       dishes.map(async (dish) => {
         const query = 'SELECT price FROM dishes WHERE id = $1';
@@ -118,7 +119,7 @@ const createNewOrder = async ({ customerId }, { tableId, dishes }) => {
         return result.price * dish.quantity;
       })
     );
-    console.log(customerId);
+
     const query1 = 'INSERT INTO orders ("customerId", "tableId", "total", "debt") VALUES ($1, $2, $3, $3) RETURNING *';
     const { rows: rows1 } = await client.query(query1, [customerId, tableId, totals.reduce((a, b) => a + b, 0)]);
     const result1 = rows1[0];
@@ -153,4 +154,26 @@ const createNewOrder = async ({ customerId }, { tableId, dishes }) => {
   }
 };
 
-export default { getAllOrders, getOneOrder, createNewOrder };
+const updateStatusOrder = async ({ orderId }, { status }) => {
+  const client = await pool.connect();
+
+  try {
+    await pool.query('BEGIN');
+
+    const query1 = 'UPDATE orders SET status = $1 WHERE id = $2 RETURNING *';
+    const { rows: rows1 } = await client.query(query1, [status, orderId]);
+    const result1 = rows1[0];
+    if (!result1) throw { statusCode: 500, message: 'ORDER_STATUS_NOT_UPDATED' };
+
+    await pool.query('COMMIT');
+
+    return result1;
+  } catch (err) {
+    await pool.query('ROLLBACK');
+    throw err;
+  } finally {
+    client.release();
+  }
+};
+
+export default { getAllOrders, getOneOrder, createNewOrder, updateStatusOrder };
