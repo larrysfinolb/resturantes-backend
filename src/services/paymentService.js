@@ -20,11 +20,11 @@ const getAllPayments = async ({ status }) => {
     JOIN orders ON payments."orderId" = orders.id JOIN customers ON orders."customerId" = customers.id `;
     query1 +=
       status === 'pending'
-        ? `WHERE status = 'pending' GROUP BY payments.id ORDER BY payments.id ASC`
+        ? `WHERE payments.status = 'pending' GROUP BY payments.id ORDER BY payments.id ASC`
         : status === 'approved'
-        ? `WHERE status = 'approved' GROUP BY payments.id ORDER BY payments.id ASC`
+        ? `WHERE payments.status = 'approved' GROUP BY payments.id ORDER BY payments.id ASC`
         : status === 'rejected'
-        ? `WHERE status = 'rejected' GROUP BY payments.id ORDER BY payments.id ASC`
+        ? `WHERE payments.status = 'rejected' GROUP BY payments.id ORDER BY payments.id ASC`
         : 'GROUP BY payments.id';
     const { rows: rows1 } = await client.query(query1);
     const result1 = rows1;
