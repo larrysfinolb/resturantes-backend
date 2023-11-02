@@ -6,6 +6,7 @@ const dni = Joi.string().regex(/^[0-9]{7,}$/);
 const status = Joi.equal('pending', 'approved', 'rejected');
 const type = Joi.equal('cash', 'card', 'transfer');
 const amount = Joi.number().min(0);
+const message = Joi.string().allow(null, '');
 
 const schemaParams = Joi.object({
   paymentId: id.required(),
@@ -22,6 +23,7 @@ const schemaBodyCreate = Joi.object({
 
 const schemaBodyUpdate = Joi.object({
   status: status.required(),
+  message,
 });
 
 export default { schemaParams, schemaBodyCreate, schemaBodyUpdate };

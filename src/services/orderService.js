@@ -154,14 +154,15 @@ const createNewOrder = async ({ customerId }, { tableId, dishes }) => {
   }
 };
 
-const updateStatusOrder = async ({ orderId }, { status }) => {
+const updateStatusOrder = async ({ orderId }, { status, message }) => {
   const client = await pool.connect();
 
   try {
     await pool.query('BEGIN');
 
-    const query1 = 'UPDATE orders SET status = $1 WHERE id = $2 RETURNING *';
-    const { rows: rows1 } = await client.query(query1, [status, orderId]);
+    const query1 =
+      'UPDATE orders SET status = COALESCE($1, status), message = COALESCE($2, message) WHERE id = $3 RETURNING *';
+    const { rows: rows1 } = await client.query(query1, [status, message, orderId]);
     const result1 = rows1[0];
     if (!result1) throw { statusCode: 500, message: 'ORDER_STATUS_NOT_UPDATED' };
 

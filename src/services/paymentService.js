@@ -104,7 +104,7 @@ const createNewPayment = async ({ orderId, reference, dni, type, amount, bankId 
   }
 };
 
-const updateOnePayment = async ({ paymentId }, { status }) => {
+const updateOnePayment = async ({ paymentId }, { status, message }) => {
   const client = await pool.connect();
 
   try {
@@ -119,8 +119,8 @@ const updateOnePayment = async ({ paymentId }, { status }) => {
     if (!result0) throw { statusCode: 404, message: 'PAYMENT_NOT_FOUND' };
     if (result0.status !== 'pending') throw { statusCode: 400, message: 'PAYMENT_NOT_PENDING' };
 
-    const query1 = `UPDATE payments SET status = $1 WHERE id = $2 RETURNING *`;
-    const { rows: rows1 } = await client.query(query1, [status, paymentId]);
+    const query1 = `UPDATE payments SET status = COALESCE($1, status), message = COALESCE($2, message) WHERE id = $3 RETURNING *`;
+    const { rows: rows1 } = await client.query(query1, [status, message, paymentId]);
     const result1 = rows1[0];
     if (!result1) throw { statusCode: 500, message: 'PAYMENT_NOT_UPDATED' };
 
@@ -137,11 +137,19 @@ const updateOnePayment = async ({ paymentId }, { status }) => {
       if (!result3) throw { statusCode: 500, message: 'ORDER_NOT_UPDATED' };
     }
 
+    const details = {
+      date: result1.createdAt.toISOString().split('T')[0],
+      dni: result1.dni,
+      amount: result1.amount,
+      type: result1.type === 'cash' ? 'Efectivo' : result1.type === 'transfer' ? 'Transferencia' : 'Tarjeta',
+    };
+
+    const subject = status === 'approved' ? 'Tu pago a sido aprobado' : 'Tu pago a sido rechazado';
     const mail = {
       from: config.smtpEmail,
       to: result0.customerEmail,
-      subject: 'Tu pago a sido comprobado',
-      html: verifiedPaymentTemplate(result1.status),
+      subject,
+      html: verifiedPaymentTemplate(result1.status, result1.message, details),
     };
     await sendMail(mail);
 
