@@ -1,4 +1,7 @@
+import { config } from '../config/index.js';
 import { pool } from '../libs/pg.js';
+import { verifiedOrderTemplate } from '../utils/templates/verifiedOrder.js';
+import { sendMail } from '../libs/nodemailer.js';
 
 const getAllOrders = async ({ inDebt }) => {
   const client = await pool.connect();
@@ -165,6 +168,54 @@ const updateStatusOrder = async ({ orderId }, { status, message }) => {
     const { rows: rows1 } = await client.query(query1, [status, message, orderId]);
     const result1 = rows1[0];
     if (!result1) throw { statusCode: 500, message: 'ORDER_STATUS_NOT_UPDATED' };
+
+    const query2 = `SELECT orders.*, tables.description as "tableDescription",
+    JSON_AGG (
+      JSON_BUILD_OBJECT (
+        'id', dishes_orders.id,
+        'quantity', dishes_orders.quantity,
+        'details', dishes_orders.details,
+        'createdAt', dishes_orders."createdAt",
+        'dish', JSON_BUILD_OBJECT (
+          'id', dishes.id,
+          'name', dishes.name,
+          'code', dishes.code,
+          'price', dishes.price,
+          'imageUrl', dishes."imageUrl",
+          'categoryId', dishes."categoryId",
+          'createdAt', dishes."createdAt"
+        )
+      )
+    ) as dishes_orders,
+    JSON_BUILD_OBJECT (
+      'id', customers.id,
+      'fullName', customers."fullName",
+      'dni', customers.dni,
+      'email', customers.email
+    ) as customer FROM orders 
+    JOIN dishes_orders ON orders.id = dishes_orders."orderId" 
+    JOIN dishes ON dishes_orders."dishId" = dishes.id 
+    JOIN customers ON orders."customerId" = customers.id
+    JOIN tables ON orders."tableId" = tables.id
+    WHERE orders.id = $1 GROUP BY orders.id, customers.id, tables.description`;
+    const { rows: rows2 } = await client.query(query2, [orderId]);
+    const result2 = rows2[0];
+    if (!result2) throw { statusCode: 404, message: 'ORDER_NOT_FOUND' };
+
+    const subject =
+      result2.status === 'wait'
+        ? 'Tu pedido esta en espera'
+        : result2.status === 'delivered'
+        ? 'Tu pedido a sido entregado'
+        : 'Tu pedido a sido rechazado';
+
+    const mail = {
+      from: config.smtpEmail,
+      to: result2.customer.email,
+      subject,
+      html: verifiedOrderTemplate(result2.status, result2.message, result2),
+    };
+    await sendMail(mail);
 
     await pool.query('COMMIT');
 
