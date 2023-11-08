@@ -209,7 +209,7 @@ export const signupTemplate = (link) => `
                                     "
                                   >
                                     <p style="margin: 0">
-                                      Gracias por registrarte en Resturantes. Confirma tu cuenta con el botón que se
+                                      Gracias por registrarte en Restaurantes. Confirma tu cuenta con el botón que se
                                       encuentra debajo de este mensaje y disfruta de nuestros servicios. ¡Bienvenido!
                                     </p>
                                   </div>
