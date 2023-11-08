@@ -51,6 +51,31 @@ const getOneCustomer = async ({ customerId }) => {
   }
 };
 
+const updateOneCustomer = async ({ customerId }, { fullName, dni, phone, active }) => {
+  const client = await pool.connect();
+
+  try {
+    await client.query('BEGIN');
+
+    const query1 = `UPDATE customers SET "fullName" = COALESCE($1, "fullName"), dni = COALESCE($2, dni), 
+    phone = COALESCE($3, phone), active = COALESCE($4, active) WHERE id = $5 RETURNING *`;
+    const { rows: rows1 } = await client.query(query1, [fullName, dni, phone, active, customerId]);
+    const result1 = rows1[0];
+    if (!result1) throw { statusCode: 404, message: 'CUSTOMER_NOT_FOUND' };
+
+    await client.query('COMMIT');
+
+    delete result1.password;
+
+    return result1;
+  } catch (error) {
+    await client.query('ROLLBACK');
+    throw error;
+  } finally {
+    client.release();
+  }
+};
+
 const getAllOrdersByCustomer = async ({ inDebt }, { customerId }) => {
   const client = await pool.connect();
 
@@ -140,4 +165,4 @@ const getAllPaymentsByCustomer = async ({ status }, { customerId }) => {
   }
 };
 
-export default { getAllCustomers, getOneCustomer, getAllOrdersByCustomer, getAllPaymentsByCustomer };
+export default { getAllCustomers, getOneCustomer, getAllOrdersByCustomer, getAllPaymentsByCustomer, updateOneCustomer };

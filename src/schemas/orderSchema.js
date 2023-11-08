@@ -3,7 +3,7 @@ import Joi from 'joi';
 const id = Joi.string().regex(/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/);
 const quantity = Joi.number().min(1).max(99);
 const details = Joi.string().allow(null, '');
-const status = Joi.string().valid('pending', 'wait', 'rejected', 'delivered', 'delivered');
+const status = Joi.string().valid('pending', 'wait', 'rejected', 'delivered');
 const message = Joi.string().allow(null, '');
 
 const schemaParams = Joi.object({

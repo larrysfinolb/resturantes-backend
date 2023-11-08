@@ -21,6 +21,15 @@ customerRouter.get(
   customerController.getOneCustomer
 );
 
+customerRouter.patch(
+  '/:customerId',
+  authJwtHandler(config.accessSecret),
+  authRoleHandler('admin'),
+  schemaHandler(customerSchema.schemaParams, 'params'),
+  schemaHandler(customerSchema.schemaUpdate, 'body'),
+  customerController.updateOneCustomer
+);
+
 customerRouter.get(
   '/:customerId/orders',
   authJwtHandler(config.accessSecret),

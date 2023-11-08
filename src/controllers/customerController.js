@@ -16,6 +16,15 @@ const getOneCustomer = (req, res, next) => {
     .catch((err) => next(err));
 };
 
+const updateOneCustomer = (req, res, next) => {
+  const { params, body } = req;
+
+  customerService
+    .updateOneCustomer(params, body)
+    .then((data) => res.status(200).json({ message: 'CUSTOMER_UPDATED', status: data }))
+    .catch((err) => next(err));
+};
+
 const getAllOrdersByCustomer = (req, res, next) => {
   const { query, params } = req;
 
@@ -34,4 +43,4 @@ const getAllPaymentsByCustomer = (req, res, next) => {
     .catch((err) => next(err));
 };
 
-export default { getAllCustomers, getOneCustomer, getAllOrdersByCustomer, getAllPaymentsByCustomer };
+export default { getAllCustomers, getOneCustomer, getAllOrdersByCustomer, getAllPaymentsByCustomer, updateOneCustomer };
