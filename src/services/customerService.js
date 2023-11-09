@@ -51,15 +51,15 @@ const getOneCustomer = async ({ customerId }) => {
   }
 };
 
-const updateOneCustomer = async ({ customerId }, { fullName, dni, phone, active }) => {
+const updateOneCustomer = async ({ customerId }, { fullName, dni, phone, active, email }) => {
   const client = await pool.connect();
 
   try {
     await client.query('BEGIN');
 
     const query1 = `UPDATE customers SET "fullName" = COALESCE($1, "fullName"), dni = COALESCE($2, dni), 
-    phone = COALESCE($3, phone), active = COALESCE($4, active) WHERE id = $5 RETURNING *`;
-    const { rows: rows1 } = await client.query(query1, [fullName, dni, phone, active, customerId]);
+    phone = COALESCE($3, phone), active = COALESCE($4, active), email = COALESCE($5, email) WHERE id = $6 RETURNING *`;
+    const { rows: rows1 } = await client.query(query1, [fullName, dni, phone, active, email, customerId]);
     const result1 = rows1[0];
     if (!result1) throw { statusCode: 404, message: 'CUSTOMER_NOT_FOUND' };
 

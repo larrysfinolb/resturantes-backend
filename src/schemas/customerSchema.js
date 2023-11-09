@@ -5,6 +5,7 @@ const fullName = Joi.string().regex(/^[A-Za-zÀ-ÿ\s']+$/);
 const dni = Joi.string().regex(/^[0-9]{7,8}$/);
 const phone = Joi.string().regex(/^\+?\d{1,3}[-.\s]?\(?\d{1,3}\)?[-.\s]?\d{1,4}[-.\s]?\d{1,4}$/);
 const active = Joi.boolean();
+const email = Joi.string().regex(/^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/);
 
 const schemaParams = Joi.object({
   customerId: id.required(),
@@ -15,6 +16,7 @@ const schemaUpdate = Joi.object({
   dni,
   phone,
   active,
+  email,
 });
 
 export default { schemaParams, schemaUpdate };
