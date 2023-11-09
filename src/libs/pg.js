@@ -9,6 +9,7 @@ const options = {
   database: config.dbName,
   password: config.dbPass,
   port: config.dbPort,
+  max: 30,
 };
 
 if (process.env.NODE_ENV === 'production') {
