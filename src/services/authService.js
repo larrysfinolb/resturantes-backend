@@ -122,6 +122,7 @@ const login = async ({ email, password }) => {
 
     if (!result1) throw { statusCode: 404, message: 'EMAIL_NOT_FOUND' };
     if (!result1.active) throw { statusCode: 401, message: 'USER_NOT_VERIFIED' };
+    if (result1.isDeleted) throw { statusCode: 401, message: 'USER_BANNED' };
 
     const isMatch = await bcrypt.compare(password, result1.password);
 
