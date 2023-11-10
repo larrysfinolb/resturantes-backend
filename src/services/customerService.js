@@ -58,7 +58,7 @@ const updateOneCustomer = async ({ customerId }, { fullName, dni, phone, isDelet
     await client.query('BEGIN');
 
     const query1 = `UPDATE customers SET "fullName" = COALESCE($1, "fullName"), dni = COALESCE($2, dni), 
-    phone = COALESCE($3, phone), isDeleted = COALESCE($4, isDeleted), email = COALESCE($5, email) WHERE id = $6 RETURNING *`;
+    phone = COALESCE($3, phone), "isDeleted" = COALESCE($4, "isDeleted"), email = COALESCE($5, email) WHERE id = $6 RETURNING *`;
     const { rows: rows1 } = await client.query(query1, [fullName, dni, phone, isDeleted, email, customerId]);
     const result1 = rows1[0];
     if (!result1) throw { statusCode: 404, message: 'CUSTOMER_NOT_FOUND' };
